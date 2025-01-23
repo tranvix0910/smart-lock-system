@@ -10,6 +10,8 @@ const Login = () => {
     const loginUrl = `https://${domain}/login?response_type=${responseType}&client_id=${clientId}&redirect_uri=${encodeURIComponent(
         redirectUri
     )}`;
+
+    console.log(loginUrl);
     
     return (
         <>
@@ -18,7 +20,7 @@ const Login = () => {
                     <img src={COVER_IMAGE} className='w-full h-full object-cover' />
                 </div>
 
-                <div className='w-1/2 h-full bg-[#333] flex flex-col p-20 justify-center'>
+                <div className='w-1/2 h-full bg-[#24303f] flex flex-col p-20 justify-center'>
                     <div className='flex gap-x-3 text-x text-pretty text-lg/8 text-gray-300'>
                         Smart Attendance System
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-[#ebf45d]">
