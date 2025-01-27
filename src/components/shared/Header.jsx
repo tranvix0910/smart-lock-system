@@ -1,12 +1,16 @@
-import { Fragment } from 'react'
+import { Fragment } from 'react';
 import { Menu, MenuButton, MenuItems, MenuItem , Popover, PopoverButton, PopoverPanel, Transition }  from '@headlessui/react'
 import { HiOutlineBell, HiOutlineSearch, HiOutlineChatAlt } from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames'
+import { Authenticator } from '@aws-amplify/ui-react';
+
+import useUserAttributes from '../../hooks/useUserAttributes';
 
 export default function Header() {
 	
-	const navigate = useNavigate()
+	const navigate = useNavigate();
+	const userAttributes = useUserAttributes();
 
 	return (
 		<div className="bg-[#24303f] h-16 px-4 flex items-center border-b border-gray-200 justify-between">
@@ -101,6 +105,12 @@ export default function Header() {
 						</>
 					)}
 				</Popover>
+				<div
+					className="text-neutral-400 font-medium truncate max-w-[150px]"
+					title={userAttributes?.preferred_username || 'Please sign in'}
+				>
+					Welcome!, {userAttributes?.preferred_username || 'Guest'}
+				</div>
 				<Menu as="div" className="relative">
 					<div>
 						<MenuButton className="ml-2 bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-neutral-400">
@@ -109,7 +119,6 @@ export default function Header() {
 								className="h-10 w-10 rounded-full bg-sky-500 bg-cover bg-no-repeat bg-center"
 								style={{ backgroundImage: 'url("https://source.unsplash.com/80x80?face")' }}
 							>
-								<span className="sr-only">Marc Backes</span>
 							</div>
 						</MenuButton>
 					</div>
@@ -124,43 +133,30 @@ export default function Header() {
 					>
 						<MenuItems className="origin-top-right z-10 absolute right-0 mt-2 w-48 rounded-sm shadow-md p-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
 							<MenuItem>
-								{({ active }) => (
-                                    
-									<div
-										onClick={() => navigate('/profile')}
-										className={classNames(
-											active && 'bg-gray-100',
-											'active:bg-gray-200 rounded-sm px-4 py-2 text-gray-700 text-sm font-medium  cursor-pointer focus:bg-gray-200'
-										)}
-									>
-										Your Profile
-									</div>
-								)}
+								<div
+									onClick={() => navigate('/dashboard/profile')}
+									className="hover:bg-gray-100 focus:bg-gray-200 rounded-sm px-4 py-2 text-gray-700 text-sm font-medium cursor-pointer"
+								>
+									Your Profile
+								</div>
 							</MenuItem>
 							<MenuItem>
-								{({ active }) => (
-									<div
-										onClick={() => navigate('/settings')}
-										className={classNames(
-											active && 'bg-gray-100',
-											'active:bg-gray-200 rounded-sm px-4 py-2 text-gray-700 text-sm font-medium cursor-pointer focus:bg-gray-200'
-										)}
-									>
-										Settings
-									</div>
-								)}
-							</MenuItem>
+								<div
+									onClick={() => navigate('/dashboard/settings')}
+									className="hover:bg-gray-100 focus:bg-gray-200 rounded-sm px-4 py-2 text-gray-700 text-sm font-medium cursor-pointer"
+								>
+									Settings
+								</div>
+								</MenuItem>
+
 							<MenuItem>
-								{({ active }) => (
-									<div
-										className={classNames(
-											active && 'bg-gray-100',
-											'active:bg-gray-200 rounded-sm px-4 py-2 text-gray-700 text-sm font-medium cursor-pointer focus:bg-gray-200'
-										)}
-									>
-										Sign out
-									</div>
-								)}
+								<Authenticator>
+									{({ signOut }) => (
+										<div onClick={signOut} className="hover:bg-gray-200 rounded-sm px-4 py-2 text-gray-700 text-sm font-medium cursor-pointer focus:bg-gray-200">
+											Sign out
+										</div>
+									)}
+								</Authenticator>
 							</MenuItem>
 						</MenuItems>
 					</Transition>

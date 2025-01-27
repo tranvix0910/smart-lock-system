@@ -52,7 +52,7 @@ export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [
 	{
 		key: 'profile',
 		label: 'Profile',
-		path: '/layout/profile',
+		path: '/dashboard/profile',
 		icon: <HiOutlineUserCircle />
 	},
 	{
