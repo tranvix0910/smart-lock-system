@@ -15,7 +15,6 @@
 }
 
 @layer components {
-
 }
 
 @layer utilities {
@@ -36,5 +35,4 @@
     .inbox-height {
         @apply h-[calc(100vh_-_8.125rem)] lg:h-[calc(100vh_-_5.625rem)];
     }
-
 }

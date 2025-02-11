@@ -1,29 +1,27 @@
-import { fetchUserAttributes } from 'aws-amplify/auth';
-import { useEffect, useState } from 'react';
+import { fetchUserAttributes } from 'aws-amplify/auth'
+import { useEffect, useState } from 'react'
 
 async function getUserAttributes() {
-	const user = await fetchUserAttributes();
-	return user;
+    const user = await fetchUserAttributes()
+    return user
 }
 
 const useUserAttributes = () => {
+    const [userAttributes, setUserAttributes] = useState(null)
 
-    const [userAttributes, setUserAttributes] = useState(null);
-    
     useEffect(() => {
         const fetchAttributes = async () => {
-        try {
-            const attributes = await getUserAttributes();
-            setUserAttributes(attributes);
-        } catch (error) {
-            console.error('Failed to fetch user attributes:', error);
+            try {
+                const attributes = await getUserAttributes()
+                setUserAttributes(attributes)
+            } catch (error) {
+                console.error('Failed to fetch user attributes:', error)
+            }
         }
-        };
-        fetchAttributes();
-    }, []);
+        fetchAttributes()
+    }, [])
 
-    return userAttributes;
+    return userAttributes
 }
 
-export default useUserAttributes;
-
+export default useUserAttributes
