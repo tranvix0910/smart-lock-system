@@ -1,14 +1,10 @@
 import axios from 'axios'
 
-const API_URL = 'https://zyje4nluna.execute-api.ap-southeast-1.amazonaws.com/dev'
+const API_URL = 'http://localhost:4000/subject'
 
-const getTeacherSubjects = async (sub) => {
+const getTeacherSubjects = async (teacher_id) => {
     try {
-        const response = await axios.post(
-            `${API_URL}/subject`,
-            { sub },
-            { headers: { 'Content-Type': 'application/json' } }
-        )
+        const response = await axios.post(API_URL, { teacher_id }, { headers: { 'Content-Type': 'application/json' } })
         return response.data
     } catch (error) {
         console.error('Error fetching teacher subjects:', error.response?.data || error.message)

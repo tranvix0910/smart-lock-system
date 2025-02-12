@@ -1,7 +1,6 @@
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 
 const StudentList = ({ students }) => {
-
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full table-auto border-collapse">
@@ -27,7 +26,9 @@ const StudentList = ({ students }) => {
                                 <input
                                     type="checkbox"
                                     checked={student.attended}
-                                    className={`w-5 h-5 ${student.attended ? 'bg-blue-500' : 'bg-gray-200'} border-2 border-gray-400 rounded-md`}
+                                    className={`w-5 h-5 ${
+                                        student.attended ? 'bg-blue-500' : 'bg-gray-200'
+                                    } border-2 border-gray-400 rounded-md`}
                                 />
                             </td>
                         </tr>
@@ -35,8 +36,8 @@ const StudentList = ({ students }) => {
                 </tbody>
             </table>
         </div>
-    );
-};
+    )
+}
 
 StudentList.propTypes = {
     students: PropTypes.arrayOf(
@@ -45,9 +46,9 @@ StudentList.propTypes = {
             email: PropTypes.string.isRequired,
             full_name: PropTypes.string.isRequired,
             birthday: PropTypes.string.isRequired,
-            phone_number: PropTypes.string.isRequired,
+            phone_number: PropTypes.string.isRequired
         })
-    ).isRequired,
-};
+    ).isRequired
+}
 
-export default StudentList;
+export default StudentList

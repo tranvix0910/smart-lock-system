@@ -1,21 +1,23 @@
 import PropTypes from 'prop-types'
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom'
 
 const ClassCard = ({ classInfo, subjectId }) => {
-
     const navigate = useNavigate()
-    const backgroundColor = "#24303f"
+    const backgroundColor = '#24303f'
 
     return (
         <div className="bg-white rounded-2xl p-4 shadow-lg flex flex-col justify-between w-70 h-[250px] relative overflow-hidden">
-            <div className="relative z-10 flex items-center justify-center rounded-full h-12 w-12 text-white font-bold text-lg" style={{ backgroundColor }}>
+            <div
+                className="relative z-10 flex items-center justify-center rounded-full h-12 w-12 text-white font-bold text-lg"
+                style={{ backgroundColor }}
+            >
                 {classInfo.name.charAt(0)}
             </div>
 
             <div className="mt-4 relative z-10 text-neutral-600">
                 <h3 className="text-lg font-semibold">{classInfo.name}</h3>
                 <p className="text-sm">{classInfo.class_id}</p>
-                <p className="text-sm">👥 {classInfo.students} Students</p>
+                <p className="text-sm">👥 {classInfo.number_of_students} Students</p>
                 <p className="text-sm">🕒 {classInfo.schedule}</p>
             </div>
 
@@ -44,9 +46,9 @@ ClassCard.propTypes = {
     classInfo: PropTypes.shape({
         class_id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
-        backgroundColor: PropTypes.string.isRequired,
-        students: PropTypes.number.isRequired,
-        schedule: PropTypes.string.isRequired,
+        backgroundColor: PropTypes.string,
+        number_of_students: PropTypes.number.isRequired,
+        schedule: PropTypes.string.isRequired
     }).isRequired,
     subjectId: PropTypes.string.isRequired
 }
@@ -56,11 +58,11 @@ ClassList.propTypes = {
         PropTypes.shape({
             class_id: PropTypes.string.isRequired,
             name: PropTypes.string.isRequired,
-            students: PropTypes.number.isRequired,
-            schedule: PropTypes.string.isRequired,
+            number_of_students: PropTypes.number.isRequired,
+            schedule: PropTypes.string.isRequired
         })
     ).isRequired,
-    subjectId: PropTypes.string.isRequired,
+    subjectId: PropTypes.string.isRequired
 }
 
 export default ClassList

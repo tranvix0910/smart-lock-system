@@ -14,10 +14,9 @@ const subjectsWithAttributes = (subjects) => {
 }
 
 const SubjectCard = ({ subject }) => {
-
     const navigate = useNavigate()
     const IconComponent = subject.icon || PiStudent
-    
+
     return (
         <div className="bg-white rounded-2xl p-4 shadow-lg flex flex-col justify-between w-70 h-[220px] relative overflow-hidden">
             <div className="absolute bottom-0 right-0 text-[180px] opacity-10" style={{ color: subject.color }}>

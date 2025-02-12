@@ -1,15 +1,32 @@
-import ClassList from "../components/Class/ClassList"
-import { useParams } from "react-router-dom"
+import { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import ClassList from '../components/Class/ClassList'
+import getSubjectClasses from '../api/getClass'
 
-const classes = [
-    { class_id: "D22CQCI01-N", name: "Internet Vạn Vật", students: 30, schedule: "Monday & Wednesday, 10:00 AM - 12:00 PM" },
-    { class_id: "D22CQAI02-M", name: "Trí Tuệ Nhân Tạo", students: 25, schedule: "Tuesday & Thursday, 2:00 PM - 4:00 PM" },
-    { class_id: "D22CQWEB03-A", name: "Lập Trình Web", students: 40, schedule: "Friday, 8:00 AM - 10:00 AM" }
-]
+const fetchClasses = async (subject_id) => {
+    try {
+        const classes = await getSubjectClasses(subject_id)
+        return classes
+    } catch (error) {
+        console.error('Error fetching subject classes:', error)
+        return []
+    }
+}
 
 const Class = () => {
-
     const { subjectId } = useParams()
+    const [classes, setClasses] = useState([])
+
+    useEffect(() => {
+        const getClasses = async () => {
+            if (subjectId) {
+                const fetchedClasses = await fetchClasses(subjectId)
+                setClasses(fetchedClasses)
+            }
+        }
+
+        getClasses()
+    }, [subjectId])
 
     return (
         <div>

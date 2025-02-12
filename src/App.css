@@ -4,7 +4,7 @@
 
 @layer base {
     body {
-        font-family: 'Satoshi', sans-serif;
+        font-family: 'Arial', sans-serif;
         font-weight: normal;
         font-size: 1rem;
         color: var(--color-body);

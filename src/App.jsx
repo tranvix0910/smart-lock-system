@@ -92,7 +92,7 @@ function App() {
                 >
                     <Route index element={<Subject />} />
                     <Route path=":subjectId" element={<Class />} />
-                    <Route path=":subjectId/:classId" element={<Student />} /> {/* Sử dụng component riêng */}
+                    <Route path=":subjectId/:classId" element={<Student />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
