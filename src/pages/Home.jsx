@@ -2,10 +2,10 @@ import COVER_IMAGE from '../assets/images/bg.png'
 import { useNavigate } from 'react-router-dom'
 
 const Login = () => {
-    const navigate = useNavigate() // Hook để điều hướng
+    const navigate = useNavigate()
 
     const handleLogin = () => {
-        navigate('/login') // Chuyển hướng tới /login
+        navigate('/login')
     }
 
     return (

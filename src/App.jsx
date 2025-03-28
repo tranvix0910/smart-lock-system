@@ -15,7 +15,9 @@ import '@aws-amplify/ui-react/styles.css'
 import { Amplify } from 'aws-amplify'
 import outputs from '../amplify_outputs.json'
 import Class from './pages/Class'
-import Student from './pages/Student'
+// import Student from './pages/Student'
+import Attendance from './pages/Attendance'
+import Schedule from './pages/Schedule'
 
 Amplify.configure(outputs)
 
@@ -46,6 +48,7 @@ const formFields = {
 const signUpAttributes = ['birthdate', 'preferred_username', 'phone_number']
 
 function RequireAuth({ children }) {
+
     const { authStatus } = useAuthenticator((context) => [context.authStatus])
 
     if (authStatus !== 'authenticated') {
@@ -60,7 +63,6 @@ function App() {
         <Authenticator.Provider>
             <Routes>
                 <Route path="/" element={<Home />} />
-
                 <Route
                     path="/login"
                     element={
@@ -92,8 +94,21 @@ function App() {
                 >
                     <Route index element={<Subject />} />
                     <Route path=":subjectId" element={<Class />} />
-                    <Route path=":subjectId/:classId" element={<Student />} />
+                    {/* <Route path=":subjectId/:classId" element={<Student />} /> */}
+                    <Route path=":subjectId/:classId" element={<Schedule />} />
                 </Route>
+
+                <Route
+                    path="/attendance"
+                    element={
+                        <RequireAuth>
+                            <Layout />
+                        </RequireAuth>
+                    }
+                >
+                    <Route index element={<Attendance />} />
+                </Route>
+
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
         </Authenticator.Provider>

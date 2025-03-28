@@ -24,7 +24,6 @@ const Class = () => {
                 setClasses(fetchedClasses)
             }
         }
-
         getClasses()
     }, [subjectId])
 

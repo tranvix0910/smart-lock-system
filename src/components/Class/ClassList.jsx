@@ -6,7 +6,7 @@ const ClassCard = ({ classInfo, subjectId }) => {
     const backgroundColor = '#24303f'
 
     return (
-        <div className="bg-white rounded-2xl p-4 shadow-lg flex flex-col justify-between w-70 h-[250px] relative overflow-hidden">
+        <div className="bg-white rounded-2xl p-4 shadow-lg flex flex-col justify-between w-70 h-[270px] relative overflow-hidden">
             <div
                 className="relative z-10 flex items-center justify-center rounded-full h-12 w-12 text-white font-bold text-lg"
                 style={{ backgroundColor }}
@@ -19,6 +19,9 @@ const ClassCard = ({ classInfo, subjectId }) => {
                 <p className="text-sm">{classInfo.class_id}</p>
                 <p className="text-sm">👥 {classInfo.number_of_students} Students</p>
                 <p className="text-sm">🕒 {classInfo.schedule}</p>
+                <p className="text-sm">
+                    📅 {new Date(classInfo.start_day).toLocaleDateString('vi-VN')} ➝ {new Date(classInfo.end_day).toLocaleDateString('vi-VN')}
+                </p>
             </div>
 
             {/* Button */}
@@ -48,7 +51,9 @@ ClassCard.propTypes = {
         name: PropTypes.string.isRequired,
         backgroundColor: PropTypes.string,
         number_of_students: PropTypes.number.isRequired,
-        schedule: PropTypes.string.isRequired
+        schedule: PropTypes.string.isRequired,
+        start_day: PropTypes.string.isRequired,
+        end_day: PropTypes.string.isRequired
     }).isRequired,
     subjectId: PropTypes.string.isRequired
 }
@@ -59,7 +64,9 @@ ClassList.propTypes = {
             class_id: PropTypes.string.isRequired,
             name: PropTypes.string.isRequired,
             number_of_students: PropTypes.number.isRequired,
-            schedule: PropTypes.string.isRequired
+            schedule: PropTypes.string.isRequired,
+            start_day: PropTypes.string.isRequired,
+            end_day: PropTypes.string.isRequired
         })
     ).isRequired,
     subjectId: PropTypes.string.isRequired

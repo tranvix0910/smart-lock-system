@@ -14,6 +14,7 @@ const fetchSubjects = async (teacher_id) => {
 }
 
 const Subject = () => {
+    
     const [subjects, setSubjects] = useState([])
     const userAttributes = useUserAttributes()
 

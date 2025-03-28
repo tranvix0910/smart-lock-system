@@ -14,6 +14,7 @@ const subjectsWithAttributes = (subjects) => {
 }
 
 const SubjectCard = ({ subject }) => {
+    
     const navigate = useNavigate()
     const IconComponent = subject.icon || PiStudent
 
@@ -60,6 +61,9 @@ SubjectCard.propTypes = {
     subject: PropTypes.shape({
         subject_id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
+        schedule: PropTypes.string.isRequired,
+        start_day: PropTypes.string.isRequired,
+        end_day: PropTypes.string.isRequired,
         icon: PropTypes.elementType.isRequired,
         color: PropTypes.string.isRequired
     }).isRequired

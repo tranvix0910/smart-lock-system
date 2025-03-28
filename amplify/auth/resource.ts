@@ -9,7 +9,7 @@ export const auth = defineAuth({
         email: true,
         externalProviders: {
             logoutUrls: ['http://localhost:3000/logout'],
-            callbackUrls: ['http://localhost:3000/dá']
+            callbackUrls: ['http://localhost:3000/dashboard']
         }
     },
     groups: ['Teacher', 'Student']
