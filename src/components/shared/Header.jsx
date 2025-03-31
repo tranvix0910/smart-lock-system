@@ -13,36 +13,36 @@ import { HiOutlineBell, HiOutlineSearch, HiOutlineChatAlt } from 'react-icons/hi
 import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames'
 import { Authenticator } from '@aws-amplify/ui-react'
-
 import useUserAttributes from '../../hooks/useUserAttributes'
 
 export default function Header() {
+    
     const navigate = useNavigate()
     const userAttributes = useUserAttributes()
 
     return (
-        <div className="bg-[#24303f] h-16 px-4 flex items-center border-b border-gray-200 justify-between">
-            <div className="relative">
-                <div className="hidden sm:block text-neutral-400">
-                    <HiOutlineSearch fontSize={20} className="absolute top-1/2 left-0 -translate-y-1/2" />
+        <div className="bg-[#24303f] h-16 px-6 flex items-center justify-between border-b border-[#2a3b4f]">
+            <div className="relative flex-1 max-w-xl">
+                <div className="relative">
+                    <HiOutlineSearch fontSize={20} className="absolute top-1/2 left-3 -translate-y-1/2 text-neutral-400" />
                     <input
                         type="text"
                         placeholder="Search..."
-                        className="w-full bg-transparent pl-9 pr-4 text-black focus:outline-none dark:text-white xl:w-125"
+                        className="w-full bg-[#2a3b4f] pl-10 pr-4 py-2 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#ebf45d] focus:ring-opacity-50 transition-all duration-200"
                     />
                 </div>
             </div>
-            <div className="flex items-center gap-2 mr-2">
+            <div className="flex items-center gap-4">
                 <Popover className="relative">
                     {({ open }) => (
                         <>
                             <PopoverButton
                                 className={classNames(
-                                    open && 'bg-gray-100',
-                                    'group inline-flex items-center rounded-sm p-1.5 text-neutral-400 hover:text-opacity-100 focus:outline-none active:bg-gray-100'
+                                    open && 'bg-[#2a3b4f]',
+                                    'group inline-flex items-center rounded-lg p-2 text-neutral-400 hover:text-white hover:bg-[#2a3b4f] focus:outline-none transition-all duration-200'
                                 )}
                             >
-                                <HiOutlineChatAlt fontSize={24} />
+                                <HiOutlineChatAlt fontSize={20} />
                             </PopoverButton>
                             <Transition
                                 as={Fragment}
@@ -54,23 +54,21 @@ export default function Header() {
                                 leaveTo="opacity-0 translate-y-1"
                             >
                                 <PopoverPanel className="absolute right-0 z-10 mt-2.5 transform h-90 w-80">
-                                    <div className="bg-white rounded-sm shadow-md ring-1 ring-black ring-opacity-5 px-2 py-2.5">
+                                    <div className="bg-[#24303f] rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 px-2 py-2.5">
                                         <div className="px-4 py-2">
-                                            <strong className="text-sm font-medium text-bodydark2">Messages</strong>
+                                            <strong className="text-sm font-medium text-white">Messages</strong>
                                         </div>
                                         <div className="mt-2 px-4 py-2 text-sm">
                                             <a
-                                                className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
+                                                className="flex flex-col gap-2.5 border-t border-[#2a3b4f] px-4.5 py-3 hover:bg-[#2a3b4f] rounded-lg transition-colors duration-200"
                                                 href="/"
                                             >
-                                                <p className="text-sm">
-                                                    <span className="text-black dark:text-white">
-                                                        Edit your information in a swipe
-                                                    </span>
-                                                    Sint occaecat cupidatat non proident, sunt in culpa qui officia
-                                                    deserunt mollit anim.
+                                                <p className="text-sm text-white">
+                                                    <span className="font-medium">Edit your information in a swipe</span>
+                                                    <br />
+                                                    <span className="text-neutral-400">Sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.</span>
                                                 </p>
-                                                <p className="text-xs">12 May, 2025</p>
+                                                <p className="text-xs text-neutral-400">12 May, 2025</p>
                                             </a>
                                         </div>
                                     </div>
@@ -84,11 +82,11 @@ export default function Header() {
                         <>
                             <PopoverButton
                                 className={classNames(
-                                    open && 'bg-gray-100',
-                                    'group inline-flex items-center rounded-sm p-1.5 text-neutral-400 hover:text-opacity-100 focus:outline-none active:bg-gray-100'
+                                    open && 'bg-[#2a3b4f]',
+                                    'group inline-flex items-center rounded-lg p-2 text-neutral-400 hover:text-white hover:bg-[#2a3b4f] focus:outline-none transition-all duration-200'
                                 )}
                             >
-                                <HiOutlineBell fontSize={24} />
+                                <HiOutlineBell fontSize={20} />
                             </PopoverButton>
                             <Transition
                                 as={Fragment}
@@ -100,23 +98,21 @@ export default function Header() {
                                 leaveTo="opacity-0 translate-y-1"
                             >
                                 <PopoverPanel className="absolute right-0 z-10 mt-2.5 transform w-80">
-                                    <div className="bg-white rounded-sm shadow-md ring-1 ring-black ring-opacity-5 px-2 py-2.5">
+                                    <div className="bg-[#24303f] rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 px-2 py-2.5">
                                         <div className="px-4 py-2">
-                                            <strong className="text-sm font-medium text-bodydark2">Messages</strong>
+                                            <strong className="text-sm font-medium text-white">Notifications</strong>
                                         </div>
                                         <div className="mt-2 px-4 py-2 text-sm">
                                             <a
-                                                className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
+                                                className="flex flex-col gap-2.5 border-t border-[#2a3b4f] px-4.5 py-3 hover:bg-[#2a3b4f] rounded-lg transition-colors duration-200"
                                                 href="/"
                                             >
-                                                <p className="text-sm">
-                                                    <span className="text-black dark:text-white">
-                                                        Edit your information in a swipe
-                                                    </span>
-                                                    Sint occaecat cupidatat non proident, sunt in culpa qui officia
-                                                    deserunt mollit anim.
+                                                <p className="text-sm text-white">
+                                                    <span className="font-medium">System Update</span>
+                                                    <br />
+                                                    <span className="text-neutral-400">New features and improvements have been added to the system.</span>
                                                 </p>
-                                                <p className="text-xs">12 May, 2025</p>
+                                                <p className="text-xs text-neutral-400">2 hours ago</p>
                                             </a>
                                         </div>
                                     </div>
@@ -125,64 +121,65 @@ export default function Header() {
                         </>
                     )}
                 </Popover>
-                <div
-                    className="text-neutral-400 font-medium truncate max-w-[150px]"
-                    title={userAttributes?.preferred_username || 'Please sign in'}
-                >
-                    Welcome!, {userAttributes?.preferred_username || 'Guest'}
-                </div>
-                <Menu as="div" className="relative">
-                    <div>
-                        <MenuButton className="ml-2 bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-neutral-400">
-                            <span className="sr-only">Open user menu</span>
-                            <div
-                                className="h-10 w-10 rounded-full bg-sky-500 bg-cover bg-no-repeat bg-center"
-                                style={{ backgroundImage: 'url("https://source.unsplash.com/80x80?face")' }}
-                            ></div>
-                        </MenuButton>
-                    </div>
-                    <Transition
-                        as={Fragment}
-                        enter="transition ease-out duration-100"
-                        enterFrom="transform opacity-0 scale-95"
-                        enterTo="transform opacity-100 scale-100"
-                        leave="transition ease-in duration-75"
-                        leaveFrom="transform opacity-100 scale-100"
-                        leaveTo="transform opacity-0 scale-95"
+                <div className="flex items-center gap-3">
+                    <div
+                        className="text-neutral-300 font-medium truncate max-w-[150px]"
+                        title={userAttributes?.preferred_username || 'Please sign in'}
                     >
-                        <MenuItems className="origin-top-right z-10 absolute right-0 mt-2 w-48 rounded-sm shadow-md p-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                            <MenuItem>
+                        Welcome, {userAttributes?.preferred_username || 'Guest'}
+                    </div>
+                    <Menu as="div" className="relative">
+                        <div>
+                            <MenuButton className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-[#ebf45d] focus:ring-opacity-50 transition-all duration-200">
+                                <span className="sr-only">Open user menu</span>
                                 <div
-                                    onClick={() => navigate('/dashboard/profile')}
-                                    className="hover:bg-gray-100 focus:bg-gray-200 rounded-sm px-4 py-2 text-gray-700 text-sm font-medium cursor-pointer"
-                                >
-                                    Your Profile
-                                </div>
-                            </MenuItem>
-                            <MenuItem>
-                                <div
-                                    onClick={() => navigate('/dashboard/settings')}
-                                    className="hover:bg-gray-100 focus:bg-gray-200 rounded-sm px-4 py-2 text-gray-700 text-sm font-medium cursor-pointer"
-                                >
-                                    Settings
-                                </div>
-                            </MenuItem>
-
-                            <MenuItem>
-                                <Authenticator>
-                                    {({ signOut }) => (
-                                        <div
-                                            onClick={signOut}
-                                            className="hover:bg-gray-200 rounded-sm px-4 py-2 text-gray-700 text-sm font-medium cursor-pointer focus:bg-gray-200"
-                                        >
-                                            Sign out
-                                        </div>
-                                    )}
-                                </Authenticator>
-                            </MenuItem>
-                        </MenuItems>
-                    </Transition>
-                </Menu>
+                                    className="h-10 w-10 rounded-full bg-[#ebf45d] bg-cover bg-no-repeat bg-center ring-2 ring-[#2a3b4f]"
+                                    style={{ backgroundImage: 'url("https://source.unsplash.com/80x80?face")' }}
+                                ></div>
+                            </MenuButton>
+                        </div>
+                        <Transition
+                            as={Fragment}
+                            enter="transition ease-out duration-100"
+                            enterFrom="transform opacity-0 scale-95"
+                            enterTo="transform opacity-100 scale-100"
+                            leave="transition ease-in duration-75"
+                            leaveFrom="transform opacity-100 scale-100"
+                            leaveTo="transform opacity-0 scale-95"
+                        >
+                            <MenuItems className="origin-top-right z-10 absolute right-0 mt-2 w-48 rounded-lg shadow-lg p-1 bg-[#24303f] ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                <MenuItem>
+                                    <div
+                                        onClick={() => navigate('/dashboard/profile')}
+                                        className="hover:bg-[#2a3b4f] focus:bg-[#2a3b4f] rounded-lg px-4 py-2 text-white text-sm font-medium cursor-pointer transition-colors duration-200"
+                                    >
+                                        Your Profile
+                                    </div>
+                                </MenuItem>
+                                <MenuItem>
+                                    <div
+                                        onClick={() => navigate('/dashboard/settings')}
+                                        className="hover:bg-[#2a3b4f] focus:bg-[#2a3b4f] rounded-lg px-4 py-2 text-white text-sm font-medium cursor-pointer transition-colors duration-200"
+                                    >
+                                        Settings
+                                    </div>
+                                </MenuItem>
+                                <MenuItem>
+                                    <Authenticator>
+                                        {({ signOut }) => (
+                                            <div
+                                                onClick={signOut}
+                                                className="hover:bg-red-500/10 focus:bg-red-500/10 rounded-lg px-4 py-2 text-red-400 text-sm font-medium cursor-pointer transition-colors duration-200"
+                                            >
+                                                Sign out
+                                            </div>
+                                        )}
+                                    </Authenticator>
+                                </MenuItem>
+                            </MenuItems>
+                        </Transition>
+                    </Menu>
+                </div>
             </div>
         </div>
     )

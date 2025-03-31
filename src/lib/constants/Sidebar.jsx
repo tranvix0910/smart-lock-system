@@ -1,6 +1,6 @@
-import { HiOutlineViewGrid, HiOutlineUsers, HiOutlineUserCircle, HiOutlineCog } from 'react-icons/hi'
+import { HiOutlineViewGrid, HiOutlineUserCircle, HiOutlineCog } from 'react-icons/hi'
 
-import { MdSubject } from 'react-icons/md'
+import { MdLockClock, MdDeviceHub } from 'react-icons/md'
 
 export const DASHBOARD_SIDEBAR_LINKS = [
     {
@@ -10,17 +10,17 @@ export const DASHBOARD_SIDEBAR_LINKS = [
         icon: <HiOutlineViewGrid />
     },
     {
-        key: 'Subject',
-        label: 'Subject',
-        path: '/subject',
-        icon: <MdSubject />
+        key: 'devices-management',
+        label: 'Devices Management',
+        path: '/dashboard/devices-management',
+        icon: <MdDeviceHub />
     },
     {
-        key: 'student',
-        label: 'Attendance',
-        path: '/attendance',
-        icon: <HiOutlineUsers />
-    }
+        key: 'recent-access-logs',
+        label: 'Recent Access Logs',
+        path: '/dashboard/recent-access-logs',
+        icon: <MdLockClock />
+    },
 ]
 
 export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [

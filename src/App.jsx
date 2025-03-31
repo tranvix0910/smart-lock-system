@@ -4,8 +4,8 @@ import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Layout from './components/Shared/Layout'
 import Profile from './pages/Profile'
-import Subject from './pages/Subject'
-
+import DevicesManagement from './pages/DevicesManagement'
+import RecentAccessLogs from './pages/RecentAccessLogs'
 import { Routes, Route, Navigate } from 'react-router-dom'
 
 import PropTypes from 'prop-types'
@@ -14,10 +14,6 @@ import '@aws-amplify/ui-react/styles.css'
 
 import { Amplify } from 'aws-amplify'
 import outputs from '../amplify_outputs.json'
-import Class from './pages/Class'
-// import Student from './pages/Student'
-import Attendance from './pages/Attendance'
-import Schedule from './pages/Schedule'
 
 Amplify.configure(outputs)
 
@@ -48,7 +44,6 @@ const formFields = {
 const signUpAttributes = ['birthdate', 'preferred_username', 'phone_number']
 
 function RequireAuth({ children }) {
-
     const { authStatus } = useAuthenticator((context) => [context.authStatus])
 
     if (authStatus !== 'authenticated') {
@@ -66,8 +61,16 @@ function App() {
                 <Route
                     path="/login"
                     element={
-                        <Authenticator formFields={formFields} signUpAttributes={signUpAttributes}>
-                            {({ user }) => (user ? <Navigate to="/dashboard" replace /> : <Home />)}
+                        <Authenticator 
+                            formFields={formFields} 
+                            signUpAttributes={signUpAttributes}
+                        >
+                            {({ user }) => {
+                                if (user) {
+                                    return <Navigate to="/dashboard" replace />
+                                }
+                                return <Home />
+                            }}
                         </Authenticator>
                     }
                 />
@@ -82,33 +85,9 @@ function App() {
                 >
                     <Route index element={<Dashboard />} />
                     <Route path="profile" element={<Profile />} />
+                    <Route path="devices-management" element={<DevicesManagement />} />
+                    <Route path="recent-access-logs" element={<RecentAccessLogs />} />
                 </Route>
-
-                <Route
-                    path="/subject"
-                    element={
-                        <RequireAuth>
-                            <Layout />
-                        </RequireAuth>
-                    }
-                >
-                    <Route index element={<Subject />} />
-                    <Route path=":subjectId" element={<Class />} />
-                    {/* <Route path=":subjectId/:classId" element={<Student />} /> */}
-                    <Route path=":subjectId/:classId" element={<Schedule />} />
-                </Route>
-
-                <Route
-                    path="/attendance"
-                    element={
-                        <RequireAuth>
-                            <Layout />
-                        </RequireAuth>
-                    }
-                >
-                    <Route index element={<Attendance />} />
-                </Route>
-
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
         </Authenticator.Provider>
