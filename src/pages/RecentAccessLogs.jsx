@@ -178,7 +178,7 @@ const RecentAccessLogs = () => {
             </div>
 
             {/* Search, Filter, and Export Bar */}
-            <div className="bg-white p- 4 rounded-lg shadow-sm mb-6">
+            <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
                 <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                     <div className="relative flex-1 w-full">
                         <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />

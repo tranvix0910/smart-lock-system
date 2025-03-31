@@ -6,6 +6,9 @@ import Layout from './components/Shared/Layout'
 import Profile from './pages/Profile'
 import DevicesManagement from './pages/DevicesManagement'
 import RecentAccessLogs from './pages/RecentAccessLogs'
+import Fingerprint from './components/BiometricManagement/Fingerprint'
+import FaceId from './components/BiometricManagement/FaceID'
+
 import { Routes, Route, Navigate } from 'react-router-dom'
 
 import PropTypes from 'prop-types'
@@ -87,6 +90,8 @@ function App() {
                     <Route path="profile" element={<Profile />} />
                     <Route path="devices-management" element={<DevicesManagement />} />
                     <Route path="recent-access-logs" element={<RecentAccessLogs />} />
+                    <Route path="biometric/fingerprint" element={<Fingerprint />} />
+                    <Route path="biometric/faceid" element={<FaceId />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>

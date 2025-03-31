@@ -55,9 +55,9 @@ export default function RecentAccess() {
                 return <MdFingerprint className={iconClass} title="Fingerprint" />
             case 'RFID':
                 return <MdKey className={iconClass} title="RFID Card" />
-            case 'WEB_APP':
+            case 'WEB APP':
                 return <MdSmartphone className={iconClass} title="Web App" />
-            case 'FACE_ID':
+            case 'FACE ID':
                 return <MdFace className={iconClass} title="Face Recognition" />    
             default:
                 return <MdKey className={iconClass} title="Other Method" />
