@@ -1,5 +1,5 @@
 import { HiOutlineViewGrid, HiOutlineUserCircle, HiOutlineCog } from 'react-icons/hi'
-import { MdLockClock, MdDeviceHub, MdFingerprint, MdFace, MdKeyboardArrowDown } from 'react-icons/md'
+import { MdLockClock, MdDeviceHub, MdFingerprint, MdFace, MdKeyboardArrowDown, MdVerifiedUser } from 'react-icons/md'
 
 export const DASHBOARD_SIDEBAR_LINKS = [
     {
@@ -23,22 +23,23 @@ export const DASHBOARD_SIDEBAR_LINKS = [
     {
         key: 'biometric-management',
         label: 'Biometric Management',
-        icon: <MdFingerprint />,
+        icon: <MdVerifiedUser />,
         hasSubmenu: true,
         submenuIcon: <MdKeyboardArrowDown />,
         submenu: [
-            {
-                key: 'fingerprint',
-                label: 'Fingerprint',
-                path: '/dashboard/biometric/fingerprint',
-                icon: <MdFingerprint />
-            },
             {
                 key: 'faceid',
                 label: 'Face ID',
                 path: '/dashboard/biometric/faceid',
                 icon: <MdFace />
+            },
+            {
+                key: 'fingerprint',
+                label: 'Fingerprint',
+                path: '/dashboard/biometric/fingerprint',
+                icon: <MdFingerprint />
             }
+            
         ]
     },    
 ]

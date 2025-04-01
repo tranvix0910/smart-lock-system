@@ -13,23 +13,23 @@ export const getDeviceByUserId = async (userId) => {
             throw new Error('Network response was not ok')
         }
 
-        const data = await response.json()
-        console.log('API Response:', data)
+        const responseData = await response.json()
+        console.log('API Response:', responseData)
 
-        if (!Array.isArray(data)) {
-            console.error('Data is not an array:', data)
-            return []
+        if (responseData && responseData.success && Array.isArray(responseData.data)) {
+            return responseData.data.map(device => ({
+                deviceId: device.deviceId,
+                deviceName: device.deviceName,
+                location: device.location,
+                status: device.status,
+                lockState: device.lockState,
+                lastMaintenance: device.lastMaintenance,
+                batteryLevel: device.batteryLevel
+            }))
         }
 
-        return data.map(device => ({
-            deviceId: device.deviceId,
-            deviceName: device.deviceName,
-            location: device.location,
-            status: device.status,
-            lockState: device.lockState,
-            lastMaintenance: device.lastMaintenance,
-            batteryLevel: device.batteryLevel
-        }))
+        console.error('Unexpected data format:', responseData)
+        return []
     } catch (error) {
         console.error('Error fetching devices:', error)
         throw error

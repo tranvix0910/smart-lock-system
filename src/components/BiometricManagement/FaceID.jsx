@@ -7,8 +7,8 @@ import {
     MdSearch,
     MdEdit,
     MdClose,
-    MdCamera,
-    MdImage
+    MdImage,
+    MdCloudUpload
 } from 'react-icons/md'
 
 const FaceID = () => {
@@ -20,6 +20,10 @@ const FaceID = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [isAddModalOpen, setIsAddModalOpen] = useState(false)
     const [selectedImage, setSelectedImage] = useState(null)
+    const [newFaceId, setNewFaceId] = useState({
+        username: '',
+        image: null
+    })
 
     const filteredFaceIds = faceIds.filter(face => 
         face.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -38,6 +42,16 @@ const FaceID = () => {
                 ? { ...face, status: face.status === 'Active' ? 'Inactive' : 'Active' }
                 : face
         ))
+    }
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            setNewFaceId(prev => ({
+                ...prev,
+                image: file
+            }))
+        }
     }
 
     return (
@@ -173,31 +187,61 @@ const FaceID = () => {
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    User
+                                    Username
                                 </label>
-                                <select className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ebf45d]">
-                                    <option value="">Select User</option>
-                                    <option value="1">John Doe</option>
-                                    <option value="2">Jane Smith</option>
-                                </select>
+                                <input
+                                    type="text"
+                                    placeholder="Enter username"
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ebf45d]"
+                                    value={newFaceId.username}
+                                    onChange={(e) => setNewFaceId(prev => ({ ...prev, username: e.target.value }))}
+                                />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Face Camera
+                                    Upload Face Image
                                 </label>
                                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                    <MdCamera className="w-16 h-16 mx-auto text-gray-400" />
-                                    <p className="mt-2 text-sm text-gray-500">
-                                        Position your face in front of the camera
-                                    </p>
-                                    <button className="mt-4 px-4 py-2 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150">
-                                        Capture
-                                    </button>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                        id="face-image-upload"
+                                    />
+                                    <label 
+                                        htmlFor="face-image-upload"
+                                        className="cursor-pointer"
+                                    >
+                                        {newFaceId.image ? (
+                                            <div className="space-y-2">
+                                                <img 
+                                                    src={URL.createObjectURL(newFaceId.image)} 
+                                                    alt="Preview" 
+                                                    className="max-h-40 mx-auto rounded-lg"
+                                                />
+                                                <p className="text-sm text-gray-500">Click to change image</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <MdCloudUpload className="w-16 h-16 mx-auto text-gray-400" />
+                                                <p className="text-sm text-gray-500">
+                                                    Click to upload face image
+                                                </p>
+                                                <p className="text-xs text-gray-400">
+                                                    Supports: JPG, PNG
+                                                </p>
+                                            </div>
+                                        )}
+                                    </label>
                                 </div>
                             </div>
                             <div className="flex justify-end gap-2 mt-6">
                                 <button
-                                    onClick={() => setIsAddModalOpen(false)}
+                                    onClick={() => {
+                                        setIsAddModalOpen(false)
+                                        setNewFaceId({ username: '', image: null })
+                                    }}
                                     className="px-4 py-2 border border-gray-200 rounded-lg hover:border-[#ebf45d] transition-colors duration-150"
                                 >
                                     Cancel
@@ -205,9 +249,12 @@ const FaceID = () => {
                                 <button
                                     onClick={() => {
                                         // Handle save
+                                        console.log('Save:', newFaceId)
                                         setIsAddModalOpen(false)
+                                        setNewFaceId({ username: '', image: null })
                                     }}
                                     className="px-4 py-2 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150"
+                                    disabled={!newFaceId.username || !newFaceId.image}
                                 >
                                     Save
                                 </button>

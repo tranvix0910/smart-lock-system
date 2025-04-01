@@ -235,11 +235,6 @@ export default function DeviceManagement() {
                                 </div>
                             </div>
 
-                            {/* Last Maintenance */}
-                            <div className="text-sm text-gray-500 mb-4">
-                                Last Maintenance: {device.lastMaintenance}
-                            </div>
-
                             {/* Action Buttons */}
                             <div className="flex justify-end gap-2 pt-2 border-t border-gray-200">
                                 <button className="p-2 hover:bg-gray-200 rounded-full transition-colors duration-150">
