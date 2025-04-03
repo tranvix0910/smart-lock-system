@@ -15,20 +15,20 @@ export const getDeviceByUserId = async (userId) => {
 
         const responseData = await response.json()
         console.log('API Response:', responseData)
-
+        
         if (responseData && responseData.success && Array.isArray(responseData.data)) {
             return responseData.data.map(device => ({
                 deviceId: device.deviceId,
                 deviceName: device.deviceName,
+                macAddress: device.macAddress,
                 location: device.location,
                 status: device.status,
                 lockState: device.lockState,
-                lastMaintenance: device.lastMaintenance,
                 batteryLevel: device.batteryLevel
             }))
         }
 
-        console.error('Unexpected data format:', responseData)
+        console.error('Invalid response format:', responseData)
         return []
     } catch (error) {
         console.error('Error fetching devices:', error)

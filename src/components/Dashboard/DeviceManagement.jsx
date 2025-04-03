@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { MdLockOpen, MdLock, MdEdit, MdDelete, MdRefresh, MdLocationOn, MdBatteryFull, MdChevronRight } from 'react-icons/md'
+import { MdLockOpen, MdLock, MdLocationOn, MdBatteryFull, MdChevronRight, MdRefresh } from 'react-icons/md'
 import { useNavigate } from 'react-router-dom'
 
 import useUserAttributes from '../../hooks/useUserAttributes'
@@ -7,22 +7,21 @@ import { getDeviceByUserId } from '../../api/getDeviceByUserID'
 import { changeDeviceState } from '../../api/putChangeDeviceState'
 import socket from '../../config/websocket'
 
-export default function DeviceManagement() {
+const DeviceManagement = () => {
     const navigate = useNavigate()
     const [devices, setDevices] = useState([])
     const [message, setMessage] = useState('')
     const [messageType, setMessageType] = useState('')
     const [isLoading, setIsLoading] = useState(true)
+    const [isReloading, setIsReloading] = useState(false)
 
     const userAttributes = useUserAttributes()
     const userId = userAttributes?.sub
 
-    // Hàm xử lý sự kiện deviceStateChanged
     const handleDeviceStateChange = useCallback(async (data) => {
 
         console.log('Received device state change:', data)
         
-        // Cập nhật trạng thái thiết bị trong state
         setDevices(prevDevices => 
             prevDevices.map(device => device.deviceId === data.deviceId
                 ? { ...device, lockState: data.lockState }
@@ -30,7 +29,6 @@ export default function DeviceManagement() {
             )
         )
 
-        // Hiển thị thông báo
         setMessage(`${data.deviceName || data.deviceId} has been ${data.lockState.toLowerCase()}ed`)
         setMessageType(data.lockState === 'LOCK' ? 'locked' : 'success')
         setTimeout(() => {
@@ -48,7 +46,6 @@ export default function DeviceManagement() {
         }
     }, [handleDeviceStateChange])
 
-    // Fetch devices khi component mount hoặc userId thay đổi
     useEffect(() => {
         const fetchDevices = async () => {
             if (!userId) {
@@ -75,6 +72,27 @@ export default function DeviceManagement() {
 
         fetchDevices()
     }, [userId])
+
+    const handleReload = async () => {
+        if (!userId) return
+        setIsReloading(true)
+        try {
+            const devicesData = await getDeviceByUserId(userId)
+            setDevices(devicesData || [])
+            setMessage('Device list updated successfully')
+            setMessageType('success')
+        } catch (error) {
+            console.error('Error reloading devices:', error)
+            setMessage('Failed to reload device list')
+            setMessageType('error')
+        } finally {
+            setIsReloading(false)
+            setTimeout(() => {
+                setMessage('')
+                setMessageType('')
+            }, 3000)
+        }
+    }
 
     const getBatteryColor = (level) => {
         if (level > 60) return 'text-green-600'
@@ -146,13 +164,22 @@ export default function DeviceManagement() {
         <div className="bg-white px-6 pt-4 pb-6 rounded-lg border border-gray-200 flex-1 shadow-sm">
             <div className="flex justify-between items-center mb-6 mt-2">
                 <strong className="text-gray-800 font-semibold text-lg">Device Management</strong>
-                <button
-                    onClick={() => navigate('/dashboard/devices-management')}
-                    className="flex items-center gap-2 px-4 py-2 text-[#24303f] bg-transparent border border-transparent hover:border-[#ebf45d] rounded-lg transition-colors duration-150"
-                >
-                    <span className="font-medium">More Devices</span>
-                    <MdChevronRight className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleReload}
+                        disabled={isReloading}
+                        className={`flex items-center justify-center w-10 h-10 rounded-lg text-[#24303f] bg-transparent border border-transparent hover:border-[#ebf45d] transition-colors duration-150 ${isReloading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        <MdRefresh className={`w-5 h-5 ${isReloading ? 'animate-spin' : ''}`} />
+                    </button>
+                    <button
+                        onClick={() => navigate('/dashboard/devices-management')}
+                        className="flex items-center gap-2 px-4 py-2 text-[#24303f] bg-transparent border border-transparent hover:border-[#ebf45d] rounded-lg transition-colors duration-150"
+                    >
+                        <span className="font-medium">More Devices</span>
+                        <MdChevronRight className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
 
             {/* Message Toast */}
@@ -234,23 +261,12 @@ export default function DeviceManagement() {
                                     </span>
                                 </div>
                             </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex justify-end gap-2 pt-2 border-t border-gray-200">
-                                <button className="p-2 hover:bg-gray-200 rounded-full transition-colors duration-150">
-                                    <MdEdit className="w-5 h-5 text-blue-600" />
-                                </button>
-                                <button className="p-2 hover:bg-gray-200 rounded-full transition-colors duration-150">
-                                    <MdRefresh className="w-5 h-5 text-green-600" />
-                                </button>
-                                <button className="p-2 hover:bg-gray-200 rounded-full transition-colors duration-150">
-                                    <MdDelete className="w-5 h-5 text-red-600" />
-                                </button>
-                            </div>
                         </div>
                     ))}
                 </div>
             )}
         </div>
     )
-} 
+}
+
+export default DeviceManagement 

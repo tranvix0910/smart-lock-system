@@ -1,10 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
-import { MdDevices, MdSearch, MdAdd, MdRefresh, MdLock, MdLockOpen, MdLocationOn, MdBatteryFull } from 'react-icons/md'
+import { MdDevices, MdSearch, MdAdd, MdRefresh, MdLock, MdLockOpen, MdLocationOn, MdBatteryFull, MdEdit, MdDelete } from 'react-icons/md'
 import useUserAttributes from '../hooks/useUserAttributes'
 import { getDeviceByUserId } from '../api/getDeviceByUserID'
 import { postCreateCollection } from '../api/postCreateCollection'
 import { postCreateDevice } from '../api/postCreateDevice'
-import AddDeviceModal from '../components/AddDeviceModal/AddDeviceModal'
+import { putUpdateDevice } from '../api/putUpdateDevice'
+import { getRequestDeleteDevice } from '../api/getRequestDeleteDevice'
+import { deleteDeleteDevice } from '../api/deleteDeleteDevice'
+import socket from '../config/websocket'
+import AddDeviceModal from '../components/DeviceModal/AddDeviceModal'
+import UpdateDeviceModal from '../components/DeviceModal/UpdateDeviceModal'
+import DeleteDeviceModal from '../components/DeviceModal/DeleteDeviceModal'
 
 const DevicesManagement = () => {
     const [devices, setDevices] = useState([])
@@ -14,7 +20,12 @@ const DevicesManagement = () => {
     const [message, setMessage] = useState('')
     const [messageType, setMessageType] = useState('')
     const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [selectedDevice, setSelectedDevice] = useState(null)
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+    const [isDeletingDevice, setIsDeletingDevice] = useState(false)
+    const [deleteResponse, setDeleteResponse] = useState(null)
 
     const userAttributes = useUserAttributes()
     const userId = userAttributes?.sub
@@ -49,6 +60,40 @@ const DevicesManagement = () => {
     useEffect(() => {
         fetchDevices()
     }, [fetchDevices])
+
+    useEffect(() => {
+        if (deleteResponse && isDeletingDevice) {
+            proceedWithDeletion()
+        }
+    }, [deleteResponse])
+
+    const handleWebSocketMessage = useCallback((data) => {
+        try {
+            if (data.type === 'DEVICE_UPDATE') {
+                setDevices(prevDevices => prevDevices.map(device => 
+                    device.deviceId === data.deviceId 
+                        ? { ...device, ...data.updates }
+                        : device
+                ))
+            } else if (data.userId === userId && 
+                      data.status === 'DELETE ACCEPTED FROM CLIENT') {
+                setDeleteResponse({
+                    deviceId: data.deviceId,
+                    status: data.status,
+                    timestamp: data.timestamp
+                })
+            }
+        } catch (error) {
+            console.error('Error processing WebSocket message:', error)
+        }
+    }, [userId])
+
+    useEffect(() => {
+        socket.on('deviceDeleteConfirmFromClient', handleWebSocketMessage)
+        return () => {
+            socket.off('deviceDeleteConfirmFromClient', handleWebSocketMessage)
+        }
+    }, [handleWebSocketMessage])
 
     const filteredDevices = devices.filter(device => {
         const matchesSearch = device.deviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -145,6 +190,81 @@ const DevicesManagement = () => {
         }
     };
 
+    const handleDeleteDevice = (device) => {
+        setSelectedDevice(device)
+        setIsDeleteConfirmOpen(true)
+    }
+
+    const handleNextStep = async () => {
+        setIsDeletingDevice(true)
+        try {
+            await getRequestDeleteDevice(userId, selectedDevice.deviceId)
+        } catch (error) {
+            console.error('Error requesting device deletion:', error)
+            showMessage('Failed to initiate device deletion', 'error')
+            setIsDeletingDevice(false)
+        }
+    }
+
+    const proceedWithDeletion = async () => {
+        try {
+            await deleteDeleteDevice(userId, selectedDevice.deviceId)
+            setDevices(prevDevices => prevDevices.filter(d => d.deviceId !== selectedDevice.deviceId))
+            showMessage(`Device ${selectedDevice.deviceName} deleted successfully`, 'success')
+            closeDeleteModal()
+        } catch (error) {
+            console.error('Error deleting device:', error)
+            showMessage(`Error deleting device: ${error.message}`, 'error')
+        }
+    }
+
+    const closeDeleteModal = () => {
+        setIsDeleteConfirmOpen(false)
+        setSelectedDevice(null)
+    }
+
+    const handleEditDevice = (device) => {
+        setSelectedDevice(device)
+        setIsUpdateModalOpen(true)
+    }
+
+    const handleUpdateDevice = async (updatedDevice) => {
+        if (!updatedDevice.deviceName || !updatedDevice.location) {
+            showMessage('Please fill in device name and location', 'error')
+            return
+        }
+
+        try {
+            setIsSubmitting(true)
+            
+            const updateData = {
+                deviceName: updatedDevice.deviceName,
+                location: updatedDevice.location
+            }
+            
+            const result = await putUpdateDevice(userId, updatedDevice.deviceId, updateData)
+            
+            if (!result.success) {
+                throw new Error(result.message || 'Could not update device')
+            }
+
+            setDevices(prevDevices => prevDevices.map(d => 
+                d.deviceId === updatedDevice.deviceId 
+                    ? {...d, ...updateData}
+                    : d
+            ))
+
+            showMessage('Device updated successfully', 'success')
+            setIsUpdateModalOpen(false)
+            setSelectedDevice(null)
+        } catch (error) {
+            console.error('Error updating device:', error)
+            showMessage(`Error updating device: ${error.message}`, 'error')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
     return (
         <div className="p-6">
             {message && (
@@ -170,7 +290,7 @@ const DevicesManagement = () => {
                 <p className="text-gray-500 mt-1">Manage and monitor all your smart lock devices</p>
             </div>
 
-            {/* Search and Filter Bar */}
+                {/* Search and Filter Bar */}
             <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
                 <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                     {/* Search */}
@@ -230,9 +350,25 @@ const DevicesManagement = () => {
                                     <h3 className="font-semibold text-gray-800 text-lg mb-1">{device.deviceName}</h3>
                                     <p className="text-sm text-gray-500">{device.deviceId}</p>
                                 </div>
-                                <span className={getStatusBadge(device.status)}>
-                                    {device.status}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className={getStatusBadge(device.status)}>
+                                        {device.status}
+                                    </span>
+                                    <div className="flex gap-1">
+                                        <button 
+                                            onClick={() => handleEditDevice(device)}
+                                            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                        >
+                                            <MdEdit className="w-4 h-4" />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteDevice(device)}
+                                            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                        >
+                                            <MdDelete className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Location */}
@@ -274,6 +410,28 @@ const DevicesManagement = () => {
                 onClose={() => setIsAddModalOpen(false)}
                 onSubmit={handleAddDevice}
                 isSubmitting={isSubmitting}
+            />
+
+            {/* Update Device Modal */}
+            <UpdateDeviceModal 
+                isOpen={isUpdateModalOpen}
+                onClose={() => {
+                    setIsUpdateModalOpen(false)
+                    setSelectedDevice(null)
+                }}
+                onSubmit={handleUpdateDevice}
+                isSubmitting={isSubmitting}
+                device={selectedDevice}
+            />
+
+            {/* Delete Confirmation Modal */}
+            <DeleteDeviceModal 
+                isOpen={isDeleteConfirmOpen}
+                onClose={closeDeleteModal}
+                device={selectedDevice}
+                onConfirm={handleNextStep}
+                isDeleting={isDeletingDevice}
+                deleteResponse={deleteResponse}
             />
         </div>
     )

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { MdClose, MdVisibility, MdVisibilityOff, MdCheck, MdArrowForward, MdArrowBack } from 'react-icons/md'
 import wifiConfigImg from '../../assets/images/wifiConfig.png'
@@ -23,6 +23,25 @@ const AddDeviceModal = ({
         device: 'pending'
     })
 
+    // Reset state when modal closes
+    useEffect(() => {
+        if (!isOpen) {
+            setCurrentStep(1)
+            setNewDevice({
+                deviceName: '',
+                location: '',
+                deviceId: '',
+                macAddress: '',
+                secretKey: ''
+            })
+            setShowSecretKey(false)
+            setSetupStatus({
+                collection: 'pending',
+                device: 'pending'
+            })
+        }
+    }, [isOpen])
+
     const handleSubmit = (e) => {
         e.preventDefault()
         setCurrentStep(3)
@@ -30,18 +49,6 @@ const AddDeviceModal = ({
     }
 
     const handleCancel = () => {
-        setNewDevice({
-            deviceName: '',
-            location: '',
-            deviceId: '',
-            macAddress: '',
-            secretKey: ''
-        })
-        setCurrentStep(1)
-        setSetupStatus({
-            collection: 'pending',
-            device: 'pending'
-        })
         onClose()
     }
 
