@@ -16,10 +16,12 @@ import {
     MdChevronRight,
     MdCalendarToday
 } from 'react-icons/md'
+
 import { getRecentAccessLogs } from '../api/getRecentAccessLogs'
 import DatePicker from 'react-datepicker'
 import "react-datepicker/dist/react-datepicker.css"
 import { CSVLink } from 'react-csv'
+import { formatDateTime, formatId } from '../utils/formatters.jsx'
 
 const RecentAccessLogs = () => {
     const [searchTerm, setSearchTerm] = useState('')
@@ -50,17 +52,6 @@ const RecentAccessLogs = () => {
         }   
         fetchAccessLogs()
     }, [])
-
-    const formatDateTime = (dateString) => {
-        const date = new Date(dateString)
-        return date.toLocaleString('vi-VN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
-    }
 
     const filteredLogs = accessLogs.filter(log => {
         const matchesSearch = 
@@ -118,10 +109,6 @@ const RecentAccessLogs = () => {
             default:
                 return <MdKey className={iconClass} title="Other Method" />
         }
-    }
-
-    const formatId = (id) => {
-        return id.substring(0, 8) + '...'
     }
 
     if (loading) {

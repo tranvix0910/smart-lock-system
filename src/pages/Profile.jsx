@@ -1,11 +1,5 @@
 import useUserAttributes from '../hooks/useUserAttributes'
-
-const formatKey = (key) => {
-    return key
-        .split('_')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
-}
+import { formatKey } from '../utils/formatters.jsx'
 
 const Profile = () => {
     const userAttributes = useUserAttributes()
