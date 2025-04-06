@@ -3,6 +3,7 @@ const API_URL = 'http://localhost:4000/api'
 export const postIndexFace = async (userId, deviceId, userName, imageFile) => {
     try {
         const formData = new FormData()
+        formData.append('imageName', imageFile.name)
         formData.append('userName', userName)
         formData.append('image', imageFile)
 

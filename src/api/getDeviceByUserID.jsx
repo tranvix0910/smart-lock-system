@@ -9,9 +9,7 @@ export const getDeviceByUserId = async (userId) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
             },
-            credentials: 'include' // Thêm credentials để gửi cookies nếu cần
         })
 
         console.log('Response status:', response.status)

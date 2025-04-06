@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { MdClose, MdDelete, MdCheckBox, MdCheckBoxOutlineBlank, MdArrowForward, MdArrowBack } from 'react-icons/md'
 
+// isDeleting
 const DeleteDeviceModal = ({ 
     isOpen, 
     onClose, 
     device,
     onConfirm,
-    isDeleting,
     deleteResponse 
 }) => {
     const [currentStep, setCurrentStep] = useState(1)
@@ -207,7 +207,6 @@ DeleteDeviceModal.propTypes = {
     onClose: PropTypes.func.isRequired,
     onConfirm: PropTypes.func.isRequired,
     device: PropTypes.object,
-    isDeleting: PropTypes.bool.isRequired,
     deleteResponse: PropTypes.object
 }
 

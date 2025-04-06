@@ -6,32 +6,28 @@ import {
     MdRefresh,
     MdSearch,
     MdClose,
-    MdImage,
-    MdCloudUpload
+    MdImage
 } from 'react-icons/md'
-import { postIndexFace } from '../../api/postIndexFace'
 import { getDeviceByUserId } from '../../api/getDeviceByUserID'
 import { getFaceID } from '../../api/getFaceID'
+import { getPresignUrl } from '../../api/postPresignUrl'
 import useUserAttributes from '../../hooks/useUserAttributes'
 import { MESSAGES } from '../../utils/constants'
 import { formatId } from '../../utils/formatters'
+import AddFaceIDModal from './Modal/AddFaceIDModal'
+import DeleteFaceIDModal from './Modal/DeleteFaceIDModal'
 
 const FaceID = () => {
     const [faceIds, setFaceIds] = useState([])
     const [searchTerm, setSearchTerm] = useState('')
     const [isAddModalOpen, setIsAddModalOpen] = useState(false)
     const [selectedImage, setSelectedImage] = useState(null)
-    const [isUploading, setIsUploading] = useState(false)
     const [message, setMessage] = useState('')
     const [messageType, setMessageType] = useState('')
     const [devices, setDevices] = useState([])
-    const [isLoadingDevices, setIsLoadingDevices] = useState(false)
-    const [isLoadingFaces, setIsLoadingFaces] = useState(false)
-    const [newFaceId, setNewFaceId] = useState({
-        username: '',
-        deviceId: '',
-        image: null
-    })
+    const [isLoadingDevices, setIsLoadingDevices] = useState(true)
+    const [isLoadingFaces, setIsLoadingFaces] = useState(true)
+    const [selectedFaceForDelete, setSelectedFaceForDelete] = useState(null)
 
     const userAttributes = useUserAttributes()
     const userId = userAttributes?.sub
@@ -65,18 +61,19 @@ const FaceID = () => {
             try {
                 setIsLoadingFaces(true)
                 const response = await getFaceID(userId)
-                
                 if (response.success && response.data) {
                     const faceIDArray = Array.isArray(response.data) ? response.data : [response.data]
-                    const formattedFaceIDs = faceIDArray.map(face => ({
-                        id: face.faceId,
-                        userId: face.userId,
-                        userName: face.userName,
-                        deviceId: face.deviceId,
-                        status: 'Active',
-                        createdAt: face.createdAt,
-                        imageUrl: face.s3Url
-                    }))
+                    const formattedFaceIDs = faceIDArray.map(face => {
+                        return {
+                            id: face.faceId,
+                            userId: face.userId,
+                            userName: face.userName,
+                            deviceId: face.deviceId,
+                            faceId: face.faceId,
+                            createdAt: face.createdAt,
+                            imageName: face.imageName,
+                        }
+                    })
                     setFaceIds(formattedFaceIDs)
                 }
             } catch (error) {
@@ -90,109 +87,102 @@ const FaceID = () => {
         loadData()
     }, [userId])
 
-    const handleUsernameChange = (e) => {
-        setNewFaceId(prev => ({
-            ...prev,
-            username: e.target.value,
-            deviceId: ''
-        }))
-    }
-
     const filteredFaceIds = faceIds.filter(face => 
-        face.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        face.deviceId.toLowerCase().includes(searchTerm.toLowerCase())
+        (face.userName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (face.deviceId?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     )
 
-    const handleDelete = (id) => {
-        if (window.confirm('Are you sure you want to delete this Face ID?')) {
-            setFaceIds(prev => prev.filter(face => face.id !== id))
-        }
+    const handleDeleteClick = (face) => {
+        setSelectedFaceForDelete(face)
     }
 
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0]
-        if (file) {
-            setNewFaceId(prev => ({
-                ...prev,
-                image: file
-            }))
-        }
+    const handleDeleteSuccess = async () => {
+        await loadFaceIDs()
     }
 
-    const handleSave = async () => {
-        if (!newFaceId.username || !newFaceId.deviceId || !newFaceId.image) {
-            showMessage(MESSAGES.ERROR.REQUIRED_FIELDS, 'error')
-            return
-        }
-
-        try {
-            setIsUploading(true)
-            const response = await postIndexFace(
-                userId,
-                newFaceId.deviceId,
-                newFaceId.username,
-                newFaceId.image
-            )
-
-            if (!response.success) {
-                throw new Error(response.message || MESSAGES.ERROR.NETWORK_ERROR)
-            }
-
-            setFaceIds(prev => [...prev, {
-                id: Date.now(),
-                userId: newFaceId.username,
-                userName: newFaceId.username,
-                deviceId: newFaceId.deviceId,
-                status: 'Active',
-                createdAt: new Date().toISOString(),
-                imageUrl: URL.createObjectURL(newFaceId.image)
-            }])
-
-            setIsAddModalOpen(false)
-            setNewFaceId({ username: '', deviceId: '', image: null })
-            showMessage(MESSAGES.SUCCESS.CREATED, 'success')
-        } catch (error) {
-            showMessage(error.message || MESSAGES.ERROR.NETWORK_ERROR, 'error')
-        } finally {
-            setIsUploading(false)
-        }
+    const handleAddFaceID = async () => {
+        await loadFaceIDs()
+        showMessage('Face ID has been added successfully!', 'success')
     }
 
     const handleReload = async () => {
+        if (!userId) return
+        
+        try {
+            setIsLoadingDevices(true)
+            
+            const deviceList = await getDeviceByUserId(userId)
+            if (deviceList && Array.isArray(deviceList)) {
+                setDevices(deviceList)
+            }
+            
+            await loadFaceIDs()
+            
+            showMessage('Data refreshed successfully', 'success')
+        } catch (error) {
+            console.error('Error reloading data:', error)
+            showMessage(MESSAGES.ERROR.NETWORK_ERROR, 'error')
+        } finally {
+            setIsLoadingDevices(false)
+        }
+    }
+
+    const handleImageClick = async (face) => {
+        if (!face) return;
+        
+        try {
+            const key = `users/${face.userId}/faces/${face.deviceId}/${face.imageName}`;
+            
+            console.log('Generated key for presigned URL:', key);
+                        
+            const response = await getPresignUrl(key);
+            
+            if (response.success && response.data && response.data.presignedUrl) {
+                setSelectedImage(response.data.presignedUrl);
+            } else {
+                showMessage('Could not load image: ' + (response.message || 'Unknown error'), 'error');
+            }
+        } catch (error) {
+            console.error('Error getting presigned URL:', error);
+            showMessage('Error loading image: ' + error.message, 'error');
+        } finally {
+            setIsLoadingFaces(false);
+        }
+    }
+
+    const loadFaceIDs = async () => {
         if (!userId) return;
         
         try {
-            setIsLoadingDevices(true);
             setIsLoadingFaces(true);
-            
-            // Load devices
-            const deviceList = await getDeviceByUserId(userId);
-            if (deviceList && Array.isArray(deviceList)) {
-                setDevices(deviceList);
-            }
-            
-            // Load face IDs
             const response = await getFaceID(userId);
-            if (response.success && response.data) {
-                const faceIDArray = Array.isArray(response.data) ? response.data : [response.data];
-                const formattedFaceIDs = faceIDArray.map(face => ({
-                    id: face.faceId,
-                    userId: face.userId,
-                    userName: face.userName,
-                    deviceId: face.deviceId,
-                    status: 'Active',
-                    createdAt: face.createdAt,
-                    imageUrl: face.s3Url
-                }));
-                setFaceIds(formattedFaceIDs);
+            if (response.success) {
+                if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+                    const formattedFaceIDs = response.data.map(face => {
+                        return {
+                            id: face.faceId,
+                            userId: face.userId,
+                            userName: face.userName,
+                            deviceId: face.deviceId,
+                            faceId: face.faceId,
+                            createdAt: face.createdAt,
+                            imageName: face.imageName,
+                        };
+                    });
+                    setFaceIds(formattedFaceIDs);
+                } else {
+                    setFaceIds([]);
+                }
+            } else {
+                console.error('Error from API:', response.message);
+                showMessage(response.message || MESSAGES.ERROR.NETWORK_ERROR, 'error');
+                setFaceIds([]);
             }
-            
-            showMessage('Data refreshed successfully', 'success');
         } catch (error) {
-            console.error('Error reloading data:', error);
+            console.error('Error loading Face IDs:', error);
             showMessage(MESSAGES.ERROR.NETWORK_ERROR, 'error');
+            setFaceIds([]);
         } finally {
-            setIsLoadingDevices(false);
             setIsLoadingFaces(false);
         }
     };
@@ -246,8 +236,9 @@ const FaceID = () => {
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     {isLoadingFaces ? (
-                        <div className="flex justify-center items-center p-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#24303f]"></div>
+                        <div className="flex justify-center items-center py-20">
+                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#24303f]"></div>
+                            <p className="ml-3 text-gray-600">Loading Face IDs...</p>
                         </div>
                     ) : faceIds.length === 0 ? (
                         <div className="text-center p-8">
@@ -288,11 +279,11 @@ const FaceID = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm font-medium text-gray-900">{face.userName}</div>
-                                            <div className="text-sm text-gray-500">{formatId(face.userId)}</div>
+                                            <div className="text-sm text-gray-500">{formatId(face.faceId)}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <button
-                                                onClick={() => setSelectedImage(face.imageUrl)}
+                                                onClick={() => handleImageClick(face)}
                                                 className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
                                             >
                                                 <MdImage className="w-5 h-5 text-gray-600" />
@@ -305,7 +296,7 @@ const FaceID = () => {
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     className="p-1 text-red-600 hover:text-red-800"
-                                                    onClick={() => handleDelete(face.id)}
+                                                    onClick={() => handleDeleteClick(face)}
                                                 >
                                                     <MdDelete className="w-5 h-5" />
                                                 </button>
@@ -319,143 +310,50 @@ const FaceID = () => {
                 </div>
             </div>
 
-            {/* Add Modal */}
-            {isAddModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold text-[#24303f]">Add New Face ID</h2>
-                            <button
-                                onClick={() => {
-                                    setIsAddModalOpen(false)
-                                    setNewFaceId({ username: '', deviceId: '', image: null })
-                                }}
-                                className="text-gray-400 hover:text-gray-600"
-                            >
-                                <MdClose className="w-6 h-6" />
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Username
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter username"
-                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ebf45d]"
-                                    value={newFaceId.username}
-                                    onChange={handleUsernameChange}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Device
-                                </label>
-                                <select
-                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ebf45d]"
-                                    value={newFaceId.deviceId}
-                                    onChange={(e) => setNewFaceId(prev => ({ ...prev, deviceId: e.target.value }))}
-                                    disabled={isLoadingDevices}
-                                >
-                                    <option value="">Select device</option>
-                                    {devices.map(device => (
-                                        <option 
-                                            key={device.deviceId} 
-                                            value={device.deviceId}
-                                            className="bg-white"
-                                        >
-                                            {device.deviceName} - {device.location}
-                                        </option>
-                                    ))}
-                                </select>
-                                {isLoadingDevices && (
-                                    <p className="text-sm text-gray-500 mt-1">Loading device list...</p>
-                                )}
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Upload Face Image
-                                </label>
-                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        className="hidden"
-                                        id="face-image-upload"
-                                    />
-                                    <label 
-                                        htmlFor="face-image-upload"
-                                        className="cursor-pointer"
-                                    >
-                                        {newFaceId.image ? (
-                                            <div className="space-y-2">
-                                                <img 
-                                                    src={URL.createObjectURL(newFaceId.image)} 
-                                                    alt="Preview" 
-                                                    className="max-h-40 mx-auto rounded-lg"
-                                                />
-                                                <p className="text-sm text-gray-500">Click to change image</p>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-2">
-                                                <MdCloudUpload className="w-16 h-16 mx-auto text-gray-400" />
-                                                <p className="text-sm text-gray-500">
-                                                    Click to upload face image
-                                                </p>
-                                                <p className="text-xs text-gray-400">
-                                                    Supported: JPG, PNG
-                                                </p>
-                                            </div>
-                                        )}
-                                    </label>
-                                </div>
-                            </div>
-                            <div className="flex justify-end gap-2 mt-6">
-                                <button
-                                    onClick={() => {
-                                        setIsAddModalOpen(false)
-                                        setNewFaceId({ username: '', deviceId: '', image: null })
-                                    }}
-                                    className="px-4 py-2 border border-gray-200 rounded-lg hover:border-[#ebf45d] transition-colors duration-150"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleSave}
-                                    className="px-4 py-2 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150"
-                                    disabled={isUploading || !newFaceId.username || !newFaceId.deviceId || !newFaceId.image}
-                                >
-                                    {isUploading ? 'Uploading...' : 'Save'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Add Face ID Modal */}
+            <AddFaceIDModal 
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                userId={userId}
+                devices={devices}
+                isLoadingDevices={isLoadingDevices}
+                onSuccess={handleAddFaceID}
+                showMessage={showMessage}
+            />
+
+            {/* Delete Face ID Modal */}
+            <DeleteFaceIDModal
+                isOpen={selectedFaceForDelete !== null}
+                onClose={() => setSelectedFaceForDelete(null)}
+                face={selectedFaceForDelete}
+                onSuccess={handleDeleteSuccess}
+                showMessage={showMessage}
+            />
 
             {/* Image Preview Modal */}
             {selectedImage && (
                 <div 
-                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                    className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
                     onClick={() => setSelectedImage(null)}
                 >
                     <div 
-                        className="bg-white p-4 rounded-lg max-w-xl relative"
+                        className="bg-white rounded-lg p-10 max-w-3xl relative overflow-hidden"
                         onClick={e => e.stopPropagation()}
                     >
                         <button
-                            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                            className="absolute top-2 right-2 z-10 w-8 h-8 bg-white rounded-full text-gray-500 hover:text-gray-700 flex items-center justify-center shadow-md"
                             onClick={() => setSelectedImage(null)}
                         >
                             <MdClose className="w-6 h-6" />
                         </button>
-                        <img 
-                            src={selectedImage} 
-                            alt="Face ID Preview" 
-                            className="max-h-[60vh] rounded-lg"
-                        />
+                        
+                        <div className="pt-4">
+                            <img 
+                                src={selectedImage} 
+                                alt="Face ID Preview" 
+                                className="max-h-[70vh] w-auto object-contain mx-auto rounded-lg"
+                            />
+                        </div>
                     </div>
                 </div>
             )}

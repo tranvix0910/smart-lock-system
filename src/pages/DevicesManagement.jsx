@@ -51,7 +51,7 @@ const DevicesManagement = () => {
             setDevices(data || [])
         } catch (error) {
             console.error('Error fetching devices:', error)
-            showMessage('Failed to load devices', 'error')
+            showMessage('No devices found', 'alert')
         } finally {
             setIsLoading(false)
         }
@@ -268,7 +268,22 @@ const DevicesManagement = () => {
     return (
         <div className="p-6">
             {message && (
-                <div className={`mb-4 p-4 rounded-lg ${messageType === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                <div className={`mb-4 p-4 rounded-lg ${
+                    (() => {
+                        switch (messageType) {
+                            case 'error':
+                                return 'bg-red-100 text-red-700 border border-red-200';
+                            case 'locked':
+                                return 'bg-red-100 text-red-700 border border-red-200';
+                            case 'success':
+                                return 'bg-green-100 text-green-700 border border-green-200';
+                            case 'alert':
+                                return 'bg-yellow-100 text-yellow-700 border border-yellow-200';
+                            default:
+                                return 'bg-gray-100 text-gray-700 border border-gray-200';
+                        }
+                    })()
+                }`}>
                     {message}
                 </div>
             )}

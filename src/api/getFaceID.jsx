@@ -10,6 +10,13 @@ export const getFaceID = async (userId) => {
             credentials: 'include'
         })
 
+        if (response.status === 404) {
+            return {
+                success: true,
+                data: []
+            }
+        }
+
         if (!response.ok) {
             throw new Error('Failed to fetch Face ID')
         }
@@ -17,19 +24,18 @@ export const getFaceID = async (userId) => {
         const result = await response.json()
 
         if (!result.success) {
+            if (result.message && result.message.includes('No Face IDs found')) {
+                return {
+                    success: true,
+                    data: []
+                }
+            }
             throw new Error(result.message || 'Failed to get Face ID data')
         }
 
         return {
             success: true,
-            data: {
-                userName: result.data.userName,
-                userId: result.data.userId,
-                deviceId: result.data.deviceId,
-                s3Url: result.data.s3Url,
-                faceId: result.data.faceId,
-                createdAt: result.data.createdAt
-            }
+            data: result.data
         }
     } catch (error) {
         console.error('Error fetching Face ID:', error)

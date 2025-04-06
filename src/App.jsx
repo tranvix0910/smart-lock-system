@@ -8,7 +8,7 @@ import DevicesManagement from './pages/DevicesManagement'
 import RecentAccessLogs from './pages/RecentAccessLogs'
 import Fingerprint from './components/BiometricManagement/Fingerprint'
 import FaceId from './components/BiometricManagement/FaceID'
-
+import RFID from './components/BiometricManagement/RFID'
 import { Routes, Route, Navigate } from 'react-router-dom'
 
 import PropTypes from 'prop-types'
@@ -92,6 +92,7 @@ function App() {
                     <Route path="recent-access-logs" element={<RecentAccessLogs />} />
                     <Route path="biometric/fingerprint" element={<Fingerprint />} />
                     <Route path="biometric/faceid" element={<FaceId />} />
+                    <Route path="biometric/rfid" element={<RFID />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>

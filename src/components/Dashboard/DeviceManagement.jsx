@@ -59,8 +59,8 @@ const DeviceManagement = () => {
                 setDevices(devicesData || [])
             } catch (error) {
                 console.error('Error fetching devices:', error)
-                setMessage('Cannot load device list')
-                setMessageType('error')
+                setMessage('No devices found')
+                setMessageType('alert')
                 setTimeout(() => {
                     setMessage('')
                     setMessageType('')
@@ -155,6 +155,8 @@ const DeviceManagement = () => {
                 return 'bg-red-100 text-red-700 border border-red-200'
             case 'success':
                 return 'bg-green-100 text-green-700 border border-green-200'
+            case 'alert':
+                return 'bg-yellow-100 text-yellow-700 border border-yellow-200'
             default:
                 return 'bg-gray-100 text-gray-700 border border-gray-200'
         }
