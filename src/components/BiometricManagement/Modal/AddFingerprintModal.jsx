@@ -305,57 +305,83 @@ const AddFingerprintModal = ({
                 {currentStep === 1 ? (
                     // Step 1: Instruction
                     <div className="space-y-6">
-                        <h3 className="text-sm font-medium text-gray-800">Instructions for adding a new fingerprint</h3>
-                        <div className="space-y-6">
-                            <div className="flex items-start space-x-3">
-                                <div className="flex-shrink-0 w-8 h-8 bg-[#ebf45d] rounded-full flex items-center justify-center text-[#24303f] font-semibold">1</div>
-                                <div className="flex-1">
-                                    <h4 className="font-medium text-gray-800">Select Device and Face ID</h4>
-                                    <p className="text-sm text-gray-600 mb-2">
-                                        Select a device and Face ID to associate with this fingerprint.
+                        <h3 className="text-base font-medium text-gray-800 mb-4">Instructions for adding a new fingerprint</h3>
+                        
+                        <div className="relative">
+                            {/* Left vertical line with gradient */}
+                            <div className="absolute left-[24px] top-6 bottom-6 w-1 bg-gradient-to-b from-[#ebf45d] via-[#5dbfeb] to-green-400 rounded-full"></div>
+                            
+                            <div className="space-y-8">
+                                {/* Step 1 */}
+                                <div className="flex items-start">
+                                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#ebf45d] flex items-center justify-center text-[#24303f] font-bold text-lg shadow-md z-10">1</div>
+                                    <div className="ml-4 bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-100 flex-1">
+                                        <h4 className="font-semibold text-[#24303f] text-lg flex items-center">
+                                            Select Device and Face ID
+                                        </h4>
+                                        <p className="text-gray-600 mt-1 mb-1">
+                                            Choose the device and face ID to associate with this fingerprint.
+                                        </p>
+                                        <div className="mt-2 bg-white p-2 rounded border border-gray-200 text-xs text-gray-500">
+                                            You must have at least one registered Face ID before adding fingerprints.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Step 2 */}
+                                <div className="flex items-start">
+                                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#5dbfeb] flex items-center justify-center text-white font-bold text-lg shadow-md z-10">2</div>
+                                    <div className="ml-4 bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-100 flex-1">
+                                        <h4 className="font-semibold text-[#24303f] text-lg">Face Authentication & Scanning</h4>
+                                        <p className="text-gray-600 mt-1 mb-3">Complete both steps in sequence:</p>
+                                        
+                                        <div className="space-y-3">
+                                            <div className="bg-blue-50 rounded-lg p-3.5 border border-blue-100 flex items-center">
+                                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold mr-3">a</div>
+                                                <div>
+                                                    <p className="font-medium text-gray-800">Verify Face ID</p>
+                                                    <p className="text-sm text-gray-600 mt-1">
+                                                        System will prompt for face verification on the device
                                     </p>
                                 </div>
                             </div>
                             
-                            <div className="flex items-start space-x-3">
-                                <div className="flex-shrink-0 w-8 h-8 bg-[#ebf45d] rounded-full flex items-center justify-center text-[#24303f] font-semibold">2</div>
-                                <div className="flex-1">
-                                    <h4 className="font-medium text-gray-800">Scan Fingerprint</h4>
-                                    <p className="text-sm text-gray-600 mb-2">
-                                        Place the user&apos;s finger on the scanner to capture the fingerprint.
-                                    </p>
-                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                                        <div className="w-full max-w-[200px] mx-auto">
-                                            <MdFingerprint className="w-16 h-16 mx-auto text-gray-400 mb-2" />
-                                            <p className="text-sm text-gray-500">
-                                                Place your finger on the scanner
-                                            </p>
+                                            <div className="bg-green-50 rounded-lg p-3.5 border border-green-100 flex items-center">
+                                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold mr-3">b</div>
+                                                <div>
+                                                    <p className="font-medium text-gray-800">Scan Fingerprint</p>
+                                                    <p className="text-sm text-gray-600 mt-1">
+                                                        Place finger on the scanner when prompted
+                                                    </p>
+                                                </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div className="flex items-start space-x-3">
-                                <div className="flex-shrink-0 w-8 h-8 bg-[#ebf45d] rounded-full flex items-center justify-center text-[#24303f] font-semibold">3</div>
-                                <div>
-                                    <h4 className="font-medium text-gray-800">Save and Complete</h4>
-                                    <p className="text-sm text-gray-600">
-                                        Verify the fingerprint information and save to complete the process.
-                                    </p>
+                                {/* Step 3 */}
+                                <div className="flex items-start">
+                                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-400 flex items-center justify-center text-white font-bold text-lg shadow-md z-10">3</div>
+                                    <div className="ml-4 bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-100 flex-1">
+                                        <h4 className="font-semibold text-[#24303f] text-lg">Save and Complete</h4>
+                                        <p className="text-gray-600 mt-1">
+                                            Review fingerprint details and confirm to complete the process.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <div className="flex justify-end">
+                        <div className="flex justify-end mt-8">
                             <button
                                 onClick={resetForm}
-                                className="px-4 py-2 border border-gray-200 rounded-lg hover:border-[#ebf45d] transition-colors duration-150 flex items-center mr-2"
+                                className="px-5 py-2.5 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors duration-150 flex items-center mr-3 text-gray-700"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={goToNextStep}
-                                className="px-4 py-2 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150 flex items-center"
+                                className="px-5 py-2.5 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150 flex items-center font-medium shadow-sm"
                             >
                                 Next
                                 <MdArrowForward className="ml-2" />
@@ -396,7 +422,7 @@ const AddFingerprintModal = ({
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Device
                             </label>
-                            <select
+                            <select 
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ebf45d]"
                                 value={selectedDevice}
                                 onChange={(e) => setSelectedDevice(e.target.value)}
@@ -411,7 +437,7 @@ const AddFingerprintModal = ({
                                             className="bg-white"
                                         >
                                             {device.deviceId} - {device.deviceName}
-                                        </option>
+                                    </option>
                                     ))
                                 ) : (
                                     <option value="" disabled>No devices available</option>

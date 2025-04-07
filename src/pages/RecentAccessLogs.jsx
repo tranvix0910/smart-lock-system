@@ -17,7 +17,7 @@ import {
     MdCalendarToday
 } from 'react-icons/md'
 
-import { getRecentAccessLogs } from '../api/getRecentAccessLogs'
+import { getRecentAccessLogs } from '../api/getRecentAccessLogs.jsx'
 import DatePicker from 'react-datepicker'
 import "react-datepicker/dist/react-datepicker.css"
 import { CSVLink } from 'react-csv'

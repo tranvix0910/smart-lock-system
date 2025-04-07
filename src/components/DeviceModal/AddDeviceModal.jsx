@@ -67,50 +67,108 @@ const AddDeviceModal = ({
             case 1:
                 return (
                     <div className="space-y-6">
-                        <h3 className="text-sm font-medium text-gray-800">Instructions for adding a new device</h3>
-                        <div className="space-y-6">
-                            <div className="flex items-start space-x-3">
-                                <div className="flex-shrink-0 w-8 h-8 bg-[#ebf45d] rounded-full flex items-center justify-center text-[#24303f] font-semibold">1</div>
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-gray-800">Connect Wifi For Device</h4>
-                                    <p className="text-sm text-gray-600 mb-3">
-                                        Open browser and access the IP displayed on the screen and connect Wifi for the device.
-                                    </p>
-                                    <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                                        <img 
-                                            src={wifiConfigImg}
-                                            alt="Wifi Configuration Interface" 
-                                            className="w-full h-auto max-h-[300px] object-contain bg-white p-2"
-                                        />
+                        <h3 className="text-lg font-medium text-gray-800 mb-3">Instructions for adding a new device</h3>
+                        
+                        <div className="relative">
+                            {/* Left vertical line with gradient */}
+                            <div className="absolute left-[24px] top-6 bottom-6 w-1 bg-gradient-to-b from-[#ebf45d] via-[#5dbfeb] to-green-400 rounded-full"></div>
+                            
+                            <div className="space-y-8">
+                                {/* Step 1 */}
+                                <div className="flex items-start">
+                                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#ebf45d] flex items-center justify-center text-[#24303f] font-bold text-lg shadow-md z-10">1</div>
+                                    <div className="ml-4 bg-gray-50 rounded-lg p-3 shadow-sm border border-gray-100 flex-1">
+                                        <h4 className="font-semibold text-[#24303f] text-lg mb-2">Connect WiFi For Device</h4>
+                                        
+                                        <div className="flex flex-row items-start gap-3">
+                                            {/* Instructions on left */}
+                                            <div className="w-3/5 flex flex-col justify-center h-full">
+                                                <p className="text-gray-600 text-sm">
+                                                    1. Open browser on your computer
+                                                </p>
+                                                <p className="text-gray-600 text-sm mt-1">
+                                                    2. Access the IP address shown on the device screen
+                                                </p>
+                                                <p className="text-gray-600 text-sm mt-1">
+                                                    3. Enter the WiFi credentials for your network
+                                                </p>
+                                                <p className="text-gray-600 text-sm mt-1">
+                                                    4. Click &quot;Save config&quot; to connect
+                                                </p>
+                                            </div>
+                                            
+                                            {/* Image on right */}
+                                            <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm w-2/5 flex items-center justify-center bg-white">
+                                                <img 
+                                                    src={wifiConfigImg}
+                                                    alt="Wifi Configuration Interface" 
+                                                    className="w-full h-[180px] object-contain p-0"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="flex items-start space-x-3">
-                                <div className="flex-shrink-0 w-8 h-8 bg-[#ebf45d] rounded-full flex items-center justify-center text-[#24303f] font-semibold">2</div>
-                                <div className="flex-1">
-                                    <h4 className="font-medium text-gray-800">Enter Device Information</h4>
-                                    <p className="text-sm text-gray-600 mb-3">After connecting Wifi, the information will be displayed below, please fill it in the form after clicking Next!</p>
-                                    <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                                        <img 
-                                            src={deviceInfoImg}
-                                            alt="Device Information Interface" 
-                                            className="w-full h-auto max-h-[300px] object-contain bg-white p-2"
-                                        />
+                                
+                                {/* Step 2 */}
+                                <div className="flex items-start">
+                                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#5dbfeb] flex items-center justify-center text-white font-bold text-lg shadow-md z-10">2</div>
+                                    <div className="ml-4 bg-gray-50 rounded-lg p-3 shadow-sm border border-gray-100 flex-1">
+                                        <h4 className="font-semibold text-[#24303f] text-lg mb-1">Enter Device Information</h4>
+                                        
+                                        <div className="flex flex-row items-start gap-3">
+                                            {/* Instructions on left */}
+                                            <div className="w-3/5">
+                                                <p className="text-gray-600 text-sm">
+                                                    After connecting WiFi, the device will display its information.
+                                                </p>
+                                                <div className="mt-2 bg-white p-2 rounded-lg border border-gray-200">
+                                                    <p className="text-xs font-medium text-gray-700">Required information:</p>
+                                                    <ul className="list-disc ml-4 text-xs text-gray-600 mt-1">
+                                                        <li>Device ID</li>
+                                                        <li>MAC Address</li>
+                                                        <li>Secret Key</li>
+                                                    </ul>
+                                                </div>
+                                                <p className="text-gray-600 text-xs mt-2 italic">
+                                                    Note these details for the next step
+                                                </p>
+                                            </div>
+                                            
+                                            {/* Image on right */}
+                                            <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm w-2/5 flex items-center justify-center bg-white">
+                                                <img 
+                                                    src={deviceInfoImg}
+                                                    alt="Device Information Interface" 
+                                                    className="w-full h-[180px] object-contain p-0"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="flex items-start space-x-3">
-                                <div className="flex-shrink-0 w-8 h-8 bg-[#ebf45d] rounded-full flex items-center justify-center text-[#24303f] font-semibold">3</div>
-                                <div>
-                                    <h4 className="font-medium text-gray-800">Confirm and complete</h4>
-                                    <p className="text-sm text-gray-600">The system will automatically create a collection and set up the device</p>
+                                
+                                {/* Step 3 */}
+                                <div className="flex items-start">
+                                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-400 flex items-center justify-center text-white font-bold text-lg shadow-md z-10">3</div>
+                                    <div className="ml-4 bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-100 flex-1">
+                                        <h4 className="font-semibold text-[#24303f] text-lg mb-1">Confirm and Complete</h4>
+                                        <p className="text-gray-600 text-sm">
+                                            Fill in the device details on the next screen and submit to complete setup.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex justify-end">
+                        
+                        <div className="flex justify-end mt-6">
+                            <button
+                                onClick={handleCancel}
+                                className="px-5 py-2.5 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors duration-150 flex items-center mr-3 text-gray-700"
+                            >
+                                Cancel
+                            </button>
                             <button
                                 onClick={nextStep}
-                                className="px-4 py-2 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150 flex items-center"
+                                className="px-5 py-2.5 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150 flex items-center font-medium shadow-sm"
                             >
                                 Next
                                 <MdArrowForward className="ml-2" />
@@ -208,14 +266,14 @@ const AddDeviceModal = ({
                             <button
                                 type="button"
                                 onClick={prevStep}
-                                className="px-4 py-2 border border-gray-200 rounded-lg hover:border-[#ebf45d] transition-colors duration-150 flex items-center"
+                                className="px-5 py-2.5 border border-gray-200 rounded-lg hover:border-[#ebf45d] transition-colors duration-150 flex items-center"
                             >
                                 <MdArrowBack className="mr-2" />
                                 Back
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150 flex items-center"
+                                className="px-5 py-2.5 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150 flex items-center"
                             >
                                 Next
                                 <MdArrowForward className="ml-2" />
@@ -275,7 +333,7 @@ const AddDeviceModal = ({
                         <div className="flex justify-end">
                             <button
                                 onClick={handleCancel}
-                                className="px-4 py-2 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150"
+                                className="px-5 py-2.5 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150"
                             >
                                 Close
                             </button>
@@ -289,8 +347,8 @@ const AddDeviceModal = ({
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-auto my-auto">
+                <div className="flex justify-between items-center mb-2">
                     <h2 className="text-xl font-semibold text-[#24303f]">Add New Device</h2>
                     <button
                         onClick={handleCancel}

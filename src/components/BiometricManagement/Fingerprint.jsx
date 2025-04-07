@@ -84,7 +84,8 @@ const Fingerprint = () => {
         // For now, just update the UI
         setFingerprints(prev => prev.filter(fp => fp.id !== id))
         showMessage('Fingerprint deleted successfully', 'success')
-        setIsDeleteModalOpen(false)
+        // Không tự đóng modal để người dùng có thể xem thông tin chi tiết
+        // setIsDeleteModalOpen(false)
     }
 
     const handleRefresh = () => {
@@ -255,7 +256,6 @@ const Fingerprint = () => {
                 onClose={() => setIsDeleteModalOpen(false)}
                 fingerprint={fingerprintToDelete}
                 onSuccess={handleDeleteFingerprint}
-                showMessage={showMessage}
             />
         </div>
     )
