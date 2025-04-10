@@ -29,6 +29,7 @@ const DevicesManagement = () => {
 
     const userAttributes = useUserAttributes()
     const userId = userAttributes?.sub
+    const userName = userAttributes?.preferred_username
 
     const showMessage = (msg, type) => {
         setMessage(msg)
@@ -178,6 +179,7 @@ const DevicesManagement = () => {
                 userId: deviceData.userId,
                 macAddress: deviceData.macAddress,
                 deviceName: deviceData.deviceName,
+                userName,
                 location: deviceData.location
             })
             

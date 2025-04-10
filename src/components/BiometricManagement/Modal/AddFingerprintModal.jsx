@@ -288,8 +288,8 @@ const AddFingerprintModal = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-xl">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-auto my-auto">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold text-[#24303f]">
                         {currentStep === 1 ? "Add New Fingerprint" : currentStep === 2 ? "Select Information" : "Capture Fingerprint"}
@@ -319,7 +319,7 @@ const AddFingerprintModal = ({
                                         <h4 className="font-semibold text-[#24303f] text-lg flex items-center">
                                             Select Device and Face ID
                                         </h4>
-                                        <p className="text-gray-600 mt-1 mb-1">
+                                        <p className="text-sm text-gray-600 mt-1 mb-1">
                                             Choose the device and face ID to associate with this fingerprint.
                                         </p>
                                         <div className="mt-2 bg-white p-2 rounded border border-gray-200 text-xs text-gray-500">
@@ -333,7 +333,7 @@ const AddFingerprintModal = ({
                                     <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#5dbfeb] flex items-center justify-center text-white font-bold text-lg shadow-md z-10">2</div>
                                     <div className="ml-4 bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-100 flex-1">
                                         <h4 className="font-semibold text-[#24303f] text-lg">Face Authentication & Scanning</h4>
-                                        <p className="text-gray-600 mt-1 mb-3">Complete both steps in sequence:</p>
+                                        <p className="text-sm text-gray-600 mt-1 mb-3">Complete both steps in sequence:</p>
                                         
                                         <div className="space-y-3">
                                             <div className="bg-blue-50 rounded-lg p-3.5 border border-blue-100 flex items-center">
@@ -364,7 +364,7 @@ const AddFingerprintModal = ({
                                     <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-400 flex items-center justify-center text-white font-bold text-lg shadow-md z-10">3</div>
                                     <div className="ml-4 bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-100 flex-1">
                                         <h4 className="font-semibold text-[#24303f] text-lg">Save and Complete</h4>
-                                        <p className="text-gray-600 mt-1">
+                                        <p className="text-sm text-gray-600 mt-1">
                                             Review fingerprint details and confirm to complete the process.
                                         </p>
                                     </div>

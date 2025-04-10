@@ -8,13 +8,12 @@ import {
 } from 'react-icons/md'
 import useUserAttributes from '../../hooks/useUserAttributes'
 import { formatId, formatDateTime } from '../../utils/formatters'
+import AddRFIDCardModal from './Modal/AddRFIDCardModal'
 
 const RFID = () => {
     const [rfidCards, setRfidCards] = useState([])
     const [searchTerm, setSearchTerm] = useState('')
     const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-    const [cardToDelete, setCardToDelete] = useState(null)
     const [message, setMessage] = useState('')
     const [messageType, setMessageType] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -98,17 +97,9 @@ const RFID = () => {
         showMessage('RFID card added successfully', 'success')
     }
 
-    const handleOpenDeleteModal = (card) => {
-        setCardToDelete(card)
-        setIsDeleteModalOpen(true)
-    }
-
-    const handleDeleteCard = (id) => {
-        // Here you would call an API to delete the RFID card
-        // For now, just update the UI
-        setRfidCards(prev => prev.filter(card => card.id !== id))
-        showMessage('RFID card deleted successfully', 'success')
-        setIsDeleteModalOpen(false)
+    const handleOpenDeleteModal = () => {
+        // Functionality will be implemented later
+        showMessage('Delete functionality coming soon', 'info')
     }
 
     const handleRefresh = () => {
@@ -134,10 +125,10 @@ const RFID = () => {
         <div className="p-6">
             {/* Thông báo */}
             {message && (
-                <div className={`mb-4 p-4 rounded-lg ${
-                    messageType === 'error' ? 'bg-red-100 text-red-700' : 
-                    messageType === 'info' ? 'bg-blue-100 text-blue-700' :
-                    'bg-green-100 text-green-700'
+                <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
+                    messageType === 'error' ? 'bg-red-500 text-white' : 
+                    messageType === 'info' ? 'bg-blue-500 text-white' :
+                    'bg-green-500 text-white'
                 }`}>
                     {message}
                 </div>
@@ -259,7 +250,7 @@ const RFID = () => {
                                             <div className="flex items-center gap-2 justify-center">
                                                 <button
                                                     className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full transition-colors"
-                                                    onClick={() => handleOpenDeleteModal(card)}
+                                                    onClick={() => handleOpenDeleteModal()}
                                                     title="Delete"
                                                 >
                                                     <MdDelete className="w-5 h-5" />
@@ -274,17 +265,13 @@ const RFID = () => {
                 </div>
             </div>
 
-            {/* Modal components would be added here */}
-            {/* Example for the DeleteRFIDModal: */}
-            {/* 
-            <DeleteRFIDModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                card={cardToDelete}
-                onSuccess={handleDeleteCard}
-                showMessage={showMessage}
+            {/* Modal components */}
+            <AddRFIDCardModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                onSubmit={handleAddCard}
+                userId={currentUserId}
             />
-            */}
         </div>
     )
 }

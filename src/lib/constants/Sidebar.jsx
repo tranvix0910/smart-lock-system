@@ -61,7 +61,7 @@ export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [
     {
         key: 'settings',
         label: 'Settings',
-        path: '/settings',
+        path: '/dashboard/settings',
         icon: <HiOutlineCog />
     }
 ]

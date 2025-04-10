@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Layout from './components/Shared/Layout'
 import Profile from './pages/Profile'
+import Settings from './pages/Settings'
 import DevicesManagement from './pages/DevicesManagement'
 import RecentAccessLogs from './pages/RecentAccessLogs'
 import Fingerprint from './components/BiometricManagement/Fingerprint'
@@ -93,6 +94,7 @@ function App() {
                     <Route path="biometric/fingerprint" element={<Fingerprint />} />
                     <Route path="biometric/faceid" element={<FaceId />} />
                     <Route path="biometric/rfid" element={<RFID />} />
+                    <Route path="settings" element={<Settings />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
