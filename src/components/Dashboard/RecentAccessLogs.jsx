@@ -9,11 +9,14 @@ import {
     MdFace,
     MdChevronRight,
     MdRefresh,
-    MdOutlineWarning
+    MdOutlineWarning,
+    MdImage,
+    MdClose
 } from 'react-icons/md'
 import { useState, useEffect } from 'react'
 import { getRecentAccessLogs } from '../../api/getRecentAccessLogs'
 import { formatDateTime } from '../../utils/formatters'
+import { getPresignUrl } from '../../api/postPresignUrl'
 
 export default function RecentAccess() {
     const navigate = useNavigate()
@@ -21,6 +24,7 @@ export default function RecentAccess() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [isRefreshing, setIsRefreshing] = useState(false)
+    const [selectedImage, setSelectedImage] = useState(null)
     
     const formatId = (id) => {
         if (!id) return 'N/A'
@@ -54,12 +58,14 @@ export default function RecentAccess() {
 
     const getStatusBadge = (status) => {
         const baseClasses = 'px-3 py-1 rounded-full text-xs font-medium'
-        if (status === 'SUCCESS' || status === 'UNLOCK') {
-            return `${baseClasses} bg-[#ebf45d] text-[#24303f] border border-[#d9e154]`
+        if (status === 'SUCCESS' || status === 'UNLOCK' || status === 'AUTHENTICATION SUCCESS') {
+            return `${baseClasses} bg-green-100 text-green-800 border border-green-200`
         } else if (status === 'LOCK') {
             return `${baseClasses} bg-blue-100 text-blue-700 border border-blue-200`
+        } else if (status === 'AUTHENTICATION FAIL' || status === 'FAILED') {
+            return `${baseClasses} bg-red-100 text-red-700 border border-red-200`
         }
-        return `${baseClasses} bg-red-100 text-red-700 border border-red-200`
+        return `${baseClasses} bg-gray-100 text-gray-700 border border-gray-200`
     }
 
     const getMethodIcon = (method) => {
@@ -77,6 +83,26 @@ export default function RecentAccess() {
                 return <MdFace className={iconClass} title="Face Recognition" />    
             default:
                 return <MdKey className={iconClass} title="Other Method" />
+        }
+    }
+
+    const handleImageClick = async (access) => {
+        if (!access || !access.imageName || !access.userId || !access.deviceId) return;
+        
+        try {
+            const key = `users/${access.userId}/faces/${access.deviceId}/${access.imageName}`;
+            
+            console.log('Generated key for presigned URL:', key);
+                        
+            const response = await getPresignUrl(key);
+            
+            if (response.success && response.data && response.data.presignedUrl) {
+                setSelectedImage(response.data.presignedUrl);
+            } else {
+                console.error('Could not load image:', response.message || 'Unknown error');
+            }
+        } catch (error) {
+            console.error('Error getting presigned URL:', error);
         }
     }
 
@@ -122,6 +148,34 @@ export default function RecentAccess() {
 
     return (
         <div className="bg-white px-6 pt-4 pb-6 rounded-lg border border-gray-200 flex-1 shadow-sm">
+            {/* Image Preview Modal */}
+            {selectedImage && (
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <div 
+                        className="bg-white rounded-lg p-6 max-w-3xl relative overflow-hidden"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <button
+                            className="absolute top-2 right-2 z-10 w-8 h-8 bg-white rounded-full text-gray-500 hover:text-gray-700 flex items-center justify-center shadow-md"
+                            onClick={() => setSelectedImage(null)}
+                        >
+                            <MdClose className="w-6 h-6" />
+                        </button>
+                        
+                        <div className="pt-4">
+                            <img 
+                                src={selectedImage} 
+                                alt="Access Image" 
+                                className="max-h-[70vh] w-auto object-contain mx-auto rounded-lg"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex justify-between items-center mb-6 mt-2">
                 <div className="flex items-center gap-2">
                     <MdAccessTime className="w-6 h-6 text-[#24303f]" />
@@ -157,6 +211,7 @@ export default function RecentAccess() {
                                 <th className="px-4 py-3 text-left">Method</th>
                                 <th className="px-4 py-3 text-left">Status</th>
                                 <th className="px-4 py-3 text-left">Notes</th>
+                                <th className="px-4 py-3 text-left">Image</th>
                             </tr>
                         </thead>
                         <tbody className="text-gray-600 divide-y divide-gray-100">
@@ -219,6 +274,19 @@ export default function RecentAccess() {
                                         <span className="text-xs text-gray-600" title={access.notes || 'No notes'}>
                                             {access.notes || '—'}
                                         </span>
+                                    </td>
+                                    <td className="px-4 py-3 whitespace-nowrap">
+                                        {access.accessType === 'FACE_ID' || access.accessType === 'FACE ID' ? (
+                                            <button
+                                                onClick={() => handleImageClick(access)}
+                                                className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors duration-150"
+                                                title="View face image"
+                                            >
+                                                <MdImage className="w-4 h-4 text-gray-600" />
+                                            </button>
+                                        ) : (
+                                            <span className="text-xs text-gray-400">—</span>
+                                        )}
                                     </td>
                                 </tr>
                             ))}

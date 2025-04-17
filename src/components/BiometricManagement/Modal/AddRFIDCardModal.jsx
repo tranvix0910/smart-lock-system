@@ -5,7 +5,7 @@ import rfidScanImg from '../../../assets/images/rfidScan.gif'
 import rfidInfoImg from '../../../assets/images/rfidInfo.gif'
 import { getDeviceByUserId } from '../../../api/getDeviceByUserID'
 import { getFaceID } from '../../../api/getFaceID'
-import { postRequestAddRFIDCard } from '../../../api/postRequestAddRFIDCard'
+import { postRequestAddRFIDCard } from '../../../api/RFIDCard'
 import socket from '../../../config/websocket'
 
 // CSS Animation styles for toast notification

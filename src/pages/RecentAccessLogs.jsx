@@ -13,10 +13,12 @@ import {
     MdChevronLeft,
     MdChevronRight,
     MdCalendarToday,
-    MdRefresh
+    MdRefresh,
+    MdImage
 } from 'react-icons/md'
 
 import { getRecentAccessLogs } from '../api/getRecentAccessLogs.jsx'
+import { getPresignUrl } from '../api/postPresignUrl'
 import DatePicker from 'react-datepicker'
 import "react-datepicker/dist/react-datepicker.css"
 import { CSVLink } from 'react-csv' 
@@ -95,12 +97,14 @@ export default function RecentAccessLogs() {
 
     const getStatusBadge = (status) => {
         const baseClasses = 'px-3 py-1 rounded-full text-xs font-medium'
-        if (status === 'SUCCESS' || status === 'UNLOCK') {
-            return `${baseClasses} bg-[#ebf45d] text-[#24303f] border border-[#d9e154]`
+        if (status === 'SUCCESS' || status === 'UNLOCK' || status === 'AUTHENTICATION SUCCESS') {
+            return `${baseClasses} bg-green-100 text-green-800 border border-green-200`
         } else if (status === 'LOCK') {
             return `${baseClasses} bg-blue-100 text-blue-700 border border-blue-200`
+        } else if (status === 'AUTHENTICATION FAIL' || status === 'FAILED') {
+            return `${baseClasses} bg-red-100 text-red-700 border border-red-200`
         }
-        return `${baseClasses} bg-red-100 text-red-700 border border-red-200`
+        return `${baseClasses} bg-gray-100 text-gray-700 border border-gray-200`
     }
 
     const getMethodIcon = (method) => {
@@ -116,6 +120,26 @@ export default function RecentAccessLogs() {
                 return <MdFace className={iconClass} title="Face Recognition" />    
             default:
                 return <MdKey className={iconClass} title="Other Method" />
+        }
+    }
+
+    const handleImageClick = async (access) => {
+        if (!access || !access.imageName || !access.userId || !access.deviceId) return;
+        
+        try {
+            const key = `users/${access.userId}/faces/${access.deviceId}/${access.imageName}`;
+            
+            console.log('Generated key for presigned URL:', key);
+                        
+            const response = await getPresignUrl(key);
+            
+            if (response.success && response.data && response.data.presignedUrl) {
+                setSelectedImage(response.data.presignedUrl);
+            } else {
+                console.error('Could not load image:', response.message || 'Unknown error');
+            }
+        } catch (error) {
+            console.error('Error getting presigned URL:', error);
         }
     }
 
@@ -145,11 +169,11 @@ export default function RecentAccessLogs() {
                     onClick={() => setSelectedImage(null)}
                 >
                     <div 
-                        className="bg-white p-4 rounded-lg max-w-4xl relative"
+                        className="bg-white p-6 rounded-lg max-w-4xl relative"
                         onClick={e => e.stopPropagation()}
                     >
                         <button
-                            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                            className="absolute top-2 right-2 z-10 w-8 h-8 bg-white rounded-full text-gray-500 hover:text-gray-700 flex items-center justify-center shadow-md"
                             onClick={() => setSelectedImage(null)}
                         >
                             <MdClose className="w-6 h-6" />
@@ -256,6 +280,7 @@ export default function RecentAccessLogs() {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -311,6 +336,19 @@ export default function RecentAccessLogs() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className="text-sm text-gray-600">{log.notes}</span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {log.accessType === 'FACE_ID' || log.accessType === 'FACE ID' ? (
+                                                    <button
+                                                        onClick={() => handleImageClick(log)}
+                                                        className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors duration-150"
+                                                        title="View face image"
+                                                    >
+                                                        <MdImage className="w-5 h-5 text-gray-600" />
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-sm text-gray-400">—</span>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}

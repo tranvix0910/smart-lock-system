@@ -18,6 +18,7 @@ import '@aws-amplify/ui-react/styles.css'
 
 import { Amplify } from 'aws-amplify'
 import outputs from '../amplify_outputs.json'
+import { components, customStyles } from './pages/Login'
 
 Amplify.configure(outputs)
 
@@ -60,6 +61,7 @@ function RequireAuth({ children }) {
 function App() {
     return (
         <Authenticator.Provider>
+            <style dangerouslySetInnerHTML={{ __html: customStyles }} />
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route
@@ -68,6 +70,7 @@ function App() {
                         <Authenticator 
                             formFields={formFields} 
                             signUpAttributes={signUpAttributes}
+                            components={components}
                         >
                             {({ user }) => {
                                 if (user) {

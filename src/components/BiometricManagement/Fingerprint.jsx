@@ -4,13 +4,34 @@ import {
     MdPersonAdd, 
     MdDelete, 
     MdRefresh,
-    MdSearch
+    MdSearch,
+    MdCheckCircle,
+    MdInfo,
+    MdError
 } from 'react-icons/md'
 import useUserAttributes from '../../hooks/useUserAttributes'
 import AddFingerprintModal from './Modal/AddFingerprintModal'
 import DeleteFingerprintModal from './Modal/DeleteFingerprintModal'
 import { getFingerprint } from '../../api/getFingerprint'
 import { formatId, formatDateTime } from '../../utils/formatters'
+
+// CSS Animation styles
+const animationStyles = `
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.animate-fade-in-down {
+    animation: fadeInDown 0.3s ease-out;
+}
+`;
 
 const Fingerprint = () => {
     const [fingerprints, setFingerprints] = useState([])
@@ -48,13 +69,23 @@ const Fingerprint = () => {
                     id: item.fingerprintId, // Use fingerprintId as the id
                 }))
                 setFingerprints(formattedData)
+                
+                // Thông báo nếu không tìm thấy vân tay
+                if (formattedData.length === 0) {
+                    showMessage('No fingerprints found for this user', 'info')
+                }
             } else {
-                showMessage('No fingerprints found', 'error')
+                showMessage('No fingerprints found', 'info')
                 setFingerprints([])
             }
         } catch (error) {
             console.error('Error fetching fingerprints:', error)
-            showMessage(error.message || 'Failed to load fingerprints', 'error')
+            // Thay đổi loại thông báo từ 'error' thành 'info' cho các thông báo không tìm thấy
+            if (error.message && error.message.toLowerCase().includes('not found')) {
+                showMessage('No fingerprints found for this user', 'info')
+            } else {
+                showMessage(error.message || 'Failed to load fingerprints', 'error')
+            }
             setFingerprints([])
         } finally {
             setIsLoading(false)
@@ -106,13 +137,19 @@ const Fingerprint = () => {
 
     return (
         <div className="p-6">
-            {/* Thông báo */}
+            {/* Inject CSS animations */}
+            <style>{animationStyles}</style>
+            
+            {/* Thông báo kiểu mới - giống RFID.jsx */}
             {message && (
-                <div className={`mb-4 p-4 rounded-lg ${
-                    messageType === 'error' ? 'bg-red-100 text-red-700' : 
-                    messageType === 'info' ? 'bg-blue-100 text-blue-700' :
-                    'bg-green-100 text-green-700'
+                <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
+                    messageType === 'error' ? 'bg-red-500 text-white' : 
+                    messageType === 'info' ? 'bg-blue-500 text-white' :
+                    'bg-green-500 text-white'
                 }`}>
+                    {messageType === 'error' && <MdError className="mr-2 w-5 h-5" />}
+                    {messageType === 'info' && <MdInfo className="mr-2 w-5 h-5" />}
+                    {messageType === 'success' && <MdCheckCircle className="mr-2 w-5 h-5" />}
                     {message}
                 </div>
             )}
@@ -211,10 +248,15 @@ const Fingerprint = () => {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {fingerprint.fingerprintTemplate ? (
                                                 <div className="bg-gray-50 px-3 py-1.5 rounded text-xs font-mono text-gray-700 relative group cursor-pointer">
-                                                    {formatTemplate(fingerprint.fingerprintTemplate)}
-                                                    <span className="absolute opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs rounded py-1 px-2 -left-1/4 bottom-full mb-1 w-64 break-all z-10">
-                                                        {fingerprint.fingerprintTemplate}
-                                                    </span>
+                                                    <div className="w-32 overflow-hidden text-ellipsis">
+                                                        {formatTemplate(fingerprint.fingerprintTemplate)}
+                                                    </div>
+                                                    <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs rounded py-2 px-3 -left-1/2 bottom-full mb-1 max-w-xs z-20">
+                                                        <div className="font-bold text-[#ebf45d] mb-1">TEMPLATE</div>
+                                                        <div className="max-h-40 overflow-y-auto break-all">
+                                                            {fingerprint.fingerprintTemplate}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             ) : (
                                                 <span className="px-3 py-1 text-xs text-gray-500">N/A</span>

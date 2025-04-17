@@ -526,7 +526,7 @@ const AddFingerprintModal = ({
                                 )}
                                 
                                 <p className="text-sm font-medium">
-                                    Please place your finger on the fingerprint sensor.
+                                    Please Face Authentication and place your finger on the fingerprint sensor.
                                 </p>
                             </div>
                         )}
