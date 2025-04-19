@@ -18,6 +18,7 @@ import {
 } from 'react-icons/md'
 
 import { getRecentAccessLogs } from '../api/getRecentAccessLogs.jsx'
+import { getUsernameByRFIDCard } from '../api/RFIDCard.jsx'
 import { getPresignUrl } from '../api/postPresignUrl'
 import DatePicker from 'react-datepicker'
 import "react-datepicker/dist/react-datepicker.css"
@@ -36,6 +37,7 @@ export default function RecentAccessLogs() {
     const [endDate, setEndDate] = useState(null)
     const itemsPerPage = 10
     const [isReloading, setIsReloading] = useState(false)
+    const [rfidUsernames, setRfidUsernames] = useState({})
 
     const fetchAccessLogs = async () => {
         setLoading(true)
@@ -48,6 +50,22 @@ export default function RecentAccessLogs() {
                     new Date(b.createdAt) - new Date(a.createdAt)
                 )
                 setAccessLogs(sortedLogs)
+                
+                // Process RFID records to fetch usernames
+                const rfidLogs = sortedLogs.filter(log => log.accessType === 'RFID')
+                console.log("RFID Logs:", rfidLogs);
+                
+                // For RFID logs, userName contains the UID of the RFID card
+                if (rfidLogs.length > 0) {
+                    console.log("Sample RFID log:", rfidLogs[0]);
+                    
+                    // Extract unique RFID UIDs from userName field
+                    const uniqueRfidIds = [...new Set(rfidLogs.map(log => log.userName))];
+                    console.log("Unique RFID UIDs:", uniqueRfidIds);
+                    
+                    // Fetch usernames for all unique RFID IDs
+                    await fetchRfidUsernames(uniqueRfidIds);
+                }
             } else {
                 setError(response.error)
             }
@@ -56,6 +74,34 @@ export default function RecentAccessLogs() {
         } finally {
             setLoading(false)
             setIsReloading(false)
+        }
+    }
+
+    const fetchRfidUsernames = async (rfidIds) => {
+        const usernamesMap = { ...rfidUsernames }
+        
+        try {
+            // Fetch usernames in parallel for all RFID IDs
+            const promises = rfidIds.map(async (rfidId) => {
+                // Skip if we already have this ID's username or rfidId is undefined
+                if (usernamesMap[rfidId] || !rfidId) return
+                
+                console.log("Fetching username for RFID ID:", rfidId);
+                
+                try {
+                    const result = await getUsernameByRFIDCard(rfidId)
+                    if (result.success && result.data) {
+                        usernamesMap[rfidId] = result.data.userName
+                    }
+                } catch (err) {
+                    console.error(`Error fetching username for RFID ${rfidId}:`, err)
+                }
+            })
+            
+            await Promise.all(promises)
+            setRfidUsernames(usernamesMap)
+        } catch (error) {
+            console.error('Error fetching RFID usernames:', error)
         }
     }
 
@@ -84,16 +130,23 @@ export default function RecentAccessLogs() {
         currentPage * itemsPerPage
     )
 
-    // Dữ liệu cho export CSV
-    const csvData = filteredLogs.map(log => ({
-        Time: formatDateTime(log.createdAt),
-        Device: log.deviceId,
-        User: log.userName,
-        'User ID': log.userId,
-        Method: log.accessType,
-        Status: log.status,
-        Notes: log.notes
-    }))
+    const csvData = filteredLogs.map(log => {
+        // For RFID logs, userName contains the UID and we may have a real username in the mapping
+        const username = log.accessType === 'RFID' && rfidUsernames[log.userName] 
+            ? rfidUsernames[log.userName] 
+            : log.userName;
+            
+        return {
+            Time: formatDateTime(log.createdAt),
+            Device: log.deviceId,
+            User: username,
+            'User ID': log.userId,
+            'RFID UID': log.accessType === 'RFID' ? log.userName : '',
+            Method: log.accessType,
+            Status: log.status,
+            Notes: log.notes
+        };
+    });
 
     const getStatusBadge = (status) => {
         const baseClasses = 'px-3 py-1 rounded-full text-xs font-medium'
@@ -142,6 +195,47 @@ export default function RecentAccessLogs() {
             console.error('Error getting presigned URL:', error);
         }
     }
+
+    const getUserDisplayName = (log) => {
+        if (log.accessType === 'RFID') {
+            // For RFID logs, userName contains the RFID UID
+            const rfidUid = log.userName;
+            // Get the user's real name from our mapping if available
+            const realName = rfidUsernames[rfidUid];
+            
+            if (realName) {
+                return (
+                    <>
+                        <div className="text-sm font-medium text-gray-900">{realName}</div>
+                        <div className="text-xs text-gray-500">RFID: {rfidUid}</div>
+                    </>
+                );
+            }
+            
+            return (
+                <>
+                    <div className="text-sm font-medium text-gray-900">RFID User</div>
+                    <div className="text-xs text-gray-500">RFID: {rfidUid}</div>
+                </>
+            );
+        } else if (log.accessType === 'FINGERPRINT') {
+            return (
+                <>
+                    <div className="text-sm font-medium text-gray-900">{log.userName}</div>
+                    <div className="text-xs text-gray-500">Fingerprint ID</div>
+                </>
+            );
+        } else {
+            return (
+                <>
+                    <div className="text-sm font-medium text-gray-900">{log.userName}</div>
+                    <div className="text-xs text-gray-500 cursor-help" title={log.userId}>
+                        {formatId(log.userId)}
+                    </div>
+                </>
+            );
+        }
+    };
 
     if (loading) {
         return (
@@ -302,22 +396,25 @@ export default function RecentAccessLogs() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
-                                                    {log.accessType === 'FINGERPRINT' ? (
+                                                    {log.accessType === 'RFID' ? (
+                                                        <>
+                                                            <MdKey className="w-5 h-5 mr-2 text-gray-400" />
+                                                            <div>
+                                                                {getUserDisplayName(log)}
+                                                            </div>
+                                                        </>
+                                                    ) : log.accessType === 'FINGERPRINT' ? (
                                                         <>
                                                             <MdFingerprint className="w-5 h-5 mr-2 text-gray-400" />
                                                             <div>
-                                                                <div className="text-sm font-medium text-gray-900">{log.userName}</div>
-                                                                <div className="text-sm text-gray-500">Fingerprint ID</div>
+                                                                {getUserDisplayName(log)}
                                                             </div>
                                                         </>
                                                     ) : (
                                                         <>
                                                             <MdPerson className="w-5 h-5 mr-2 text-gray-400" />
                                                             <div>
-                                                                <div className="text-sm font-medium text-gray-900">{log.userName}</div>
-                                                                <div className="text-sm text-gray-500 cursor-help" title={log.userId}>
-                                                                    {formatId(log.userId)}
-                                                                </div>
+                                                                {getUserDisplayName(log)}
                                                             </div>
                                                         </>
                                                     )}

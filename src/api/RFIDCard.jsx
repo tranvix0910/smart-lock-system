@@ -77,3 +77,34 @@ export const postRequestDeleteRFIDCard = async (userId, deviceId, rfidId, faceId
         throw error
     }
 }
+
+export const getUsernameByRFIDCard = async (rfidId) => {
+    if (!rfidId) {
+        console.error("getUsernameByRFIDCard called with no rfidId");
+        return { success: false, error: "No RFID ID provided" };
+    }
+    
+    try {
+        console.log("Sending request to get username for RFID:", rfidId);
+        
+        const response = await fetch(`${API_URL}/rfid/get-username-by-rfid`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ rfidId })
+        })
+        
+        if (!response.ok) {
+            console.error(`API response not OK: ${response.status} ${response.statusText}`);
+            throw new Error('Network response was not ok')
+        }
+        
+        const data = await response.json()
+        console.log("API response data:", data)
+        return data
+    } catch (error) {
+        console.error('Error getting username by RFID card:', error)
+        throw error
+    }
+}

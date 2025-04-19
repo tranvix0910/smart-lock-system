@@ -15,7 +15,6 @@ import DeleteFingerprintModal from './Modal/DeleteFingerprintModal'
 import { getFingerprint } from '../../api/getFingerprint'
 import { formatId, formatDateTime } from '../../utils/formatters'
 
-// CSS Animation styles
 const animationStyles = `
 @keyframes fadeInDown {
     0% {
@@ -55,7 +54,6 @@ const Fingerprint = () => {
         }, 3000)
     }
 
-    // Fetch fingerprints from API
     const fetchFingerprints = async () => {
         if (!currentUserId) return
 
@@ -63,14 +61,12 @@ const Fingerprint = () => {
         try {
             const result = await getFingerprint(currentUserId)
             if (result.success && result.data) {
-                // Map API data to component format
                 const formattedData = result.data.map(item => ({
                     ...item,
-                    id: item.fingerprintId, // Use fingerprintId as the id
+                    id: item.fingerprintId,
                 }))
                 setFingerprints(formattedData)
                 
-                // Thông báo nếu không tìm thấy vân tay
                 if (formattedData.length === 0) {
                     showMessage('No fingerprints found for this user', 'info')
                 }
@@ -80,7 +76,6 @@ const Fingerprint = () => {
             }
         } catch (error) {
             console.error('Error fetching fingerprints:', error)
-            // Thay đổi loại thông báo từ 'error' thành 'info' cho các thông báo không tìm thấy
             if (error.message && error.message.toLowerCase().includes('not found')) {
                 showMessage('No fingerprints found for this user', 'info')
             } else {
@@ -92,7 +87,6 @@ const Fingerprint = () => {
         }
     }
 
-    // Load fingerprints when component mounts
     useEffect(() => {
         fetchFingerprints()
     }, [currentUserId])
@@ -111,12 +105,8 @@ const Fingerprint = () => {
     }
 
     const handleDeleteFingerprint = (id) => {
-        // Here you would call an API to delete the fingerprint
-        // For now, just update the UI
         setFingerprints(prev => prev.filter(fp => fp.id !== id))
         showMessage('Fingerprint deleted successfully', 'success')
-        // Không tự đóng modal để người dùng có thể xem thông tin chi tiết
-        // setIsDeleteModalOpen(false)
     }
 
     const handleRefresh = () => {
@@ -129,7 +119,6 @@ const Fingerprint = () => {
         (fp.fingerprintId && fp.fingerprintId.toLowerCase().includes(searchTerm.toLowerCase()))
     )
 
-    // Format the template to show only first part
     const formatTemplate = (template) => {
         if (!template) return 'N/A';
         return template.length > 15 ? `${template.substring(0, 15)}...` : template;
@@ -137,10 +126,9 @@ const Fingerprint = () => {
 
     return (
         <div className="p-6">
-            {/* Inject CSS animations */}
+            
             <style>{animationStyles}</style>
             
-            {/* Thông báo kiểu mới - giống RFID.jsx */}
             {message && (
                 <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
                     messageType === 'error' ? 'bg-red-500 text-white' : 

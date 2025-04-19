@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { MdClose, MdVisibility, MdVisibilityOff, MdCheck, MdArrowForward, MdArrowBack } from 'react-icons/md'
+import { MdClose, MdVisibility, MdVisibilityOff, MdCheck, MdArrowForward, MdArrowBack, MdError } from 'react-icons/md'
 import wifiConfigImg from '../../assets/images/wifiConfig.png'
 import deviceInfoImg from '../../assets/images/deviceInfo.png'
 
 const AddDeviceModal = ({ 
     isOpen, 
     onClose, 
-    onSubmit
+    onSubmit,
+    isSubmitting,
+    error
 }) => {
     const [currentStep, setCurrentStep] = useState(1)
     const [newDevice, setNewDevice] = useState({
@@ -22,6 +24,7 @@ const AddDeviceModal = ({
         collection: 'pending',
         device: 'pending'
     })
+    const [modalError, setModalError] = useState(null)
 
     // Reset state when modal closes
     useEffect(() => {
@@ -39,8 +42,38 @@ const AddDeviceModal = ({
                 collection: 'pending',
                 device: 'pending'
             })
+            setModalError(null)
         }
     }, [isOpen])
+
+    // Automatically close modal when error occurs
+    useEffect(() => {
+        if (error) {
+            // Check if error is about deviceId already existing
+            if (error.includes('deviceId already exists')) {
+                // Set custom error message only in modal
+                setModalError('Device with this ID already exists')
+                
+                // Immediately show error indicators
+                setSetupStatus({
+                    collection: 'error',
+                    device: 'error'
+                });
+                
+                // Auto close after delay
+                setTimeout(() => {
+                    onClose();
+                }, 2000);
+            } else {
+                // For other errors, use the original error message
+                setModalError(error)
+                setSetupStatus({
+                    collection: 'error',
+                    device: 'error'
+                });
+            }
+        }
+    }, [error, onClose]);
 
     const handleSubmit = (e) => {
         e.preventDefault()
@@ -285,22 +318,39 @@ const AddDeviceModal = ({
                 return (
                     <div className="space-y-6">
                         <h3 className="text-lg font-medium text-gray-800">Setting up device</h3>
+                        
+                        {/* Show error message if exists - Improved design */}
+                        {modalError && (
+                            <div className="p-5 bg-red-50 text-red-700 border border-red-200 rounded-lg shadow-sm">
+                                <div className="flex items-start">
+                                    <div className="bg-red-100 rounded-full p-2 mr-3 flex-shrink-0">
+                                        <MdError className="w-6 h-6 text-red-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-red-700 text-lg mb-1">Error Setting Up Device</h4>
+                                        <p className="text-red-600 mb-2">{modalError}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center justify-between p-5 bg-gray-50 rounded-lg shadow-sm border border-gray-100">
                                 <div className="flex items-center space-x-3">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                                         setupStatus.collection === 'success' ? 'bg-green-100 text-green-600' :
                                         setupStatus.collection === 'error' ? 'bg-red-100 text-red-600' :
                                         'bg-[#ebf45d] text-[#24303f]'
                                     }`}>
-                                        {setupStatus.collection === 'success' ? <MdCheck className="w-5 h-5" /> :
-                                         setupStatus.collection === 'error' ? '!' :
-                                         <div className="w-4 h-4 border-2 border-[#24303f] border-t-transparent rounded-full animate-spin"></div>}
+                                        {setupStatus.collection === 'success' ? <MdCheck className="w-6 h-6" /> :
+                                         setupStatus.collection === 'error' ? <MdClose className="w-6 h-6" /> :
+                                         <div className="w-5 h-5 border-2 border-[#24303f] border-t-transparent rounded-full animate-spin"></div>}
                                     </div>
                                     <div>
-                                        <h4 className="font-medium text-gray-800">Create Collection</h4>
+                                        <h4 className="font-medium text-gray-800 text-base">Create Collection</h4>
                                         <p className="text-sm text-gray-600">
                                             {setupStatus.collection === 'success' ? 'Successfully created collection' :
+                                             setupStatus.collection === 'error' && modalError === 'Device with this ID already exists' ? 'Failed: Device ID already exists in collection' :
                                              setupStatus.collection === 'error' ? 'Error creating collection' :
                                              'Creating collection...'}
                                         </p>
@@ -308,23 +358,24 @@ const AddDeviceModal = ({
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center justify-between p-5 bg-gray-50 rounded-lg shadow-sm border border-gray-100">
                                 <div className="flex items-center space-x-3">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                                         setupStatus.device === 'success' ? 'bg-green-100 text-green-600' :
                                         setupStatus.device === 'error' ? 'bg-red-100 text-red-600' :
                                         'bg-[#ebf45d] text-[#24303f]'
                                     }`}>
-                                        {setupStatus.device === 'success' ? <MdCheck className="w-5 h-5" /> :
-                                         setupStatus.device === 'error' ? '!' :
-                                         <div className="w-4 h-4 border-2 border-[#24303f] border-t-transparent rounded-full animate-spin"></div>}
+                                        {setupStatus.device === 'success' ? <MdCheck className="w-6 h-6" /> :
+                                         setupStatus.device === 'error' ? <MdClose className="w-6 h-6" /> :
+                                         <div className="w-5 h-5 border-2 border-[#24303f] border-t-transparent rounded-full animate-spin"></div>}
                                     </div>
                                     <div>
-                                        <h4 className="font-medium text-gray-800">Setting up device</h4>
+                                        <h4 className="font-medium text-gray-800 text-base">Setting up device</h4>
                                         <p className="text-sm text-gray-600">
                                             {setupStatus.device === 'success' ? 'Successfully set up device' :
+                                             setupStatus.device === 'error' && modalError === 'Device with this ID already exists' ? 'Failed: Device with this ID is already registered' :
                                              setupStatus.device === 'error' ? 'Error setting up device' :
-                                             'Setting up device...'}
+                                             isSubmitting ? 'Setting up device...' : 'Waiting for setup to begin...'}
                                         </p>
                                     </div>
                                 </div>
@@ -333,7 +384,8 @@ const AddDeviceModal = ({
                         <div className="flex justify-end">
                             <button
                                 onClick={handleCancel}
-                                className="px-5 py-2.5 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150"
+                                className="px-5 py-2.5 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150 font-medium"
+                                disabled={isSubmitting && !modalError}
                             >
                                 Close
                             </button>
@@ -368,7 +420,8 @@ AddDeviceModal.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
     onSubmit: PropTypes.func.isRequired,
-    isSubmitting: PropTypes.bool.isRequired
+    isSubmitting: PropTypes.bool.isRequired,
+    error: PropTypes.string
 }
 
 export default AddDeviceModal

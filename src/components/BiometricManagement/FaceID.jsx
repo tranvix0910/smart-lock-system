@@ -6,7 +6,10 @@ import {
     MdRefresh,
     MdSearch,
     MdClose,
-    MdImage
+    MdImage,
+    MdCheckCircle,
+    MdInfo,
+    MdError
 } from 'react-icons/md'
 import { getDeviceByUserId } from '../../api/getDeviceByUserID'
 import { getFaceID } from '../../api/getFaceID'
@@ -16,6 +19,23 @@ import { MESSAGES } from '../../utils/constants'
 import { formatId } from '../../utils/formatters'
 import AddFaceIDModal from './Modal/AddFaceIDModal'
 import DeleteFaceIDModal from './Modal/DeleteFaceIDModal'
+
+const animationStyles = `
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.animate-fade-in-down {
+    animation: fadeInDown 0.3s ease-out;
+}
+`;
 
 const FaceID = () => {
     const [faceIds, setFaceIds] = useState([])
@@ -98,6 +118,7 @@ const FaceID = () => {
 
     const handleDeleteSuccess = async () => {
         await loadFaceIDs()
+        showMessage('Face ID has been deleted successfully!', 'success')
     }
 
     const handleAddFaceID = async () => {
@@ -189,8 +210,19 @@ const FaceID = () => {
 
     return (
         <div className="p-6">
+            {/* Inject CSS animations */}
+            <style>{animationStyles}</style>
+            
+            {/* Thông báo kiểu mới - giống Fingerprint.jsx */}
             {message && (
-                <div className={`mb-4 p-4 rounded-lg ${messageType === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
+                    messageType === 'error' ? 'bg-red-500 text-white' : 
+                    messageType === 'info' ? 'bg-blue-500 text-white' :
+                    'bg-green-500 text-white'
+                }`}>
+                    {messageType === 'error' && <MdError className="mr-2 w-5 h-5" />}
+                    {messageType === 'info' && <MdInfo className="mr-2 w-5 h-5" />}
+                    {messageType === 'success' && <MdCheckCircle className="mr-2 w-5 h-5" />}
                     {message}
                 </div>
             )}
@@ -226,8 +258,9 @@ const FaceID = () => {
                         <button
                             className="p-2 text-[#24303f] border border-gray-200 rounded-lg hover:border-[#ebf45d] transition-colors duration-150"
                             onClick={handleReload}
+                            disabled={isLoadingFaces}
                         >
-                            <MdRefresh className="w-5 h-5" />
+                            <MdRefresh className={`w-5 h-5 ${isLoadingFaces ? 'animate-spin' : ''}`} />
                         </button>
                     </div>
                 </div>
@@ -241,10 +274,10 @@ const FaceID = () => {
                             <p className="ml-3 text-gray-600">Loading Face IDs...</p>
                         </div>
                     ) : faceIds.length === 0 ? (
-                        <div className="text-center p-8">
-                            <MdFace className="mx-auto h-12 w-12 text-gray-400" />
-                            <h3 className="mt-2 text-sm font-medium text-gray-900">No Face IDs</h3>
-                            <p className="mt-1 text-sm text-gray-500">Get started by creating a new Face ID.</p>
+                        <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+                            <MdFace className="w-16 h-16 text-gray-300 mb-3" />
+                            <h3 className="text-lg">No Face IDs Found</h3>
+                            <p className="text-sm text-gray-400 mt-1">Get started by creating a new Face ID.</p>
                             <div className="mt-6">
                                 <button
                                     onClick={() => setIsAddModalOpen(true)}
@@ -295,8 +328,9 @@ const FaceID = () => {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <div className="flex items-center gap-2">
                                                 <button
-                                                    className="p-1 text-red-600 hover:text-red-800"
+                                                    className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full transition-colors"
                                                     onClick={() => handleDeleteClick(face)}
+                                                    title="Delete"
                                                 >
                                                     <MdDelete className="w-5 h-5" />
                                                 </button>

@@ -1,5 +1,20 @@
 import { useState, useEffect, useCallback } from 'react'
-import { MdDevices, MdSearch, MdAdd, MdRefresh, MdLock, MdLockOpen, MdLocationOn, MdBatteryFull, MdEdit, MdDelete } from 'react-icons/md'
+import { 
+    MdDevices, 
+    MdSearch, 
+    MdAdd, 
+    MdRefresh, 
+    MdLock, 
+    MdLockOpen, 
+    MdLocationOn, 
+    MdBatteryFull, 
+    MdEdit, 
+    MdDelete,
+    MdCheckCircle,
+    MdInfo,
+    MdError,
+    MdWarning
+} from 'react-icons/md'
 import useUserAttributes from '../hooks/useUserAttributes'
 import { getDeviceByUserId } from '../api/getDeviceByUserID'
 import { postCreateCollection } from '../api/postCreateCollection'
@@ -7,10 +22,29 @@ import { postCreateDevice } from '../api/postCreateDevice'
 import { putUpdateDevice } from '../api/putUpdateDevice'
 import { getRequestDeleteDevice } from '../api/getRequestDeleteDevice'
 import { deleteDeleteDevice } from '../api/deleteDeleteDevice'
+import postUnlockDevice from '../api/postUnlockDevice'
 import socket from '../config/websocket'
 import AddDeviceModal from '../components/DeviceModal/AddDeviceModal'
 import UpdateDeviceModal from '../components/DeviceModal/UpdateDeviceModal'
 import DeleteDeviceModal from '../components/DeviceModal/DeleteDeviceModal'
+import UnlockDeviceModal from '../components/DeviceModal/UnlockDeviceModal'
+
+const animationStyles = `
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.animate-fade-in-down {
+    animation: fadeInDown 0.3s ease-out;
+}
+`;
 
 const DevicesManagement = () => {
     const [devices, setDevices] = useState([])
@@ -26,6 +60,9 @@ const DevicesManagement = () => {
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
     const [isDeletingDevice, setIsDeletingDevice] = useState(false)
     const [deleteResponse, setDeleteResponse] = useState(null)
+    const [addDeviceError, setAddDeviceError] = useState('')
+    const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false)
+    const [isUnlockingSystem, setIsUnlockingSystem] = useState(false)
 
     const userAttributes = useUserAttributes()
     const userId = userAttributes?.sub
@@ -49,10 +86,11 @@ const DevicesManagement = () => {
         try {
             setIsLoading(true)
             const data = await getDeviceByUserId(userId)
+            console.log('Fetched devices data in DevicesManagement:', data)
             setDevices(data || [])
         } catch (error) {
             console.error('Error fetching devices:', error)
-            showMessage('No devices found', 'alert')
+            showMessage('No devices found', 'info')
         } finally {
             setIsLoading(false)
         }
@@ -89,12 +127,62 @@ const DevicesManagement = () => {
         }
     }, [userId])
 
+    const handleSystemLockedChange = useCallback((data) => {
+        console.log('Received system locked event:', data)
+        
+        if (data.mode === 'SYSTEM LOCKED' && data.systemLocked === true) {
+            // Update device in state
+            setDevices(prevDevices => 
+                prevDevices.map(device => device.deviceId === data.deviceId
+                    ? { 
+                        ...device, 
+                        systemLocked: true,
+                        systemLockedAt: data.timestamp 
+                    }
+                    : device
+                )
+            )
+            
+            // Show notification to user
+            const device = devices.find(d => d.deviceId === data.deviceId);
+            const deviceName = device ? device.deviceName : data.deviceId;
+            showMessage(`${deviceName} has been system locked!`, 'error');
+        }
+    }, [devices])
+
+    const handleSystemUnlockedChange = useCallback((data) => {
+        console.log('Received system unlocked event:', data)
+        
+        if (data.mode === 'SYSTEM UNLOCKED' && data.systemLocked === false) {
+            // Update device in state
+            setDevices(prevDevices => 
+                prevDevices.map(device => device.deviceId === data.deviceId
+                    ? { 
+                        ...device, 
+                        systemLocked: false,
+                        systemLockedAt: null 
+                    }
+                    : device
+                )
+            )
+            
+            const device = devices.find(d => d.deviceId === data.deviceId);
+            const deviceName = device ? device.deviceName : data.deviceId;
+            showMessage(`${deviceName} has been system unlocked`, 'success');
+        }
+    }, [devices])
+
     useEffect(() => {
         socket.on('deviceDeleteConfirmFromClient', handleWebSocketMessage)
+        socket.on('systemLocked', handleSystemLockedChange)
+        socket.on('systemUnlocked', handleSystemUnlockedChange)
+        
         return () => {
             socket.off('deviceDeleteConfirmFromClient', handleWebSocketMessage)
+            socket.off('systemLocked', handleSystemLockedChange)
+            socket.off('systemUnlocked', handleSystemUnlockedChange)
         }
-    }, [handleWebSocketMessage])
+    }, [handleWebSocketMessage, handleSystemLockedChange, handleSystemUnlockedChange])
 
     const filteredDevices = devices.filter(device => {
         const matchesSearch = device.deviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -119,6 +207,10 @@ const DevicesManagement = () => {
         return `${baseClasses} bg-red-100 text-red-700 border border-red-200`
     }
 
+    const getSystemLockBadge = () => {
+        return `px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700 border border-orange-200`
+    }
+
     const handleAddDevice = async (newDevice) => {
         if (!newDevice.deviceName || !newDevice.location || !newDevice.deviceId || !newDevice.macAddress || !newDevice.secretKey) {
             showMessage('Please fill in all device information', 'error')
@@ -132,6 +224,7 @@ const DevicesManagement = () => {
 
         try {
             setIsSubmitting(true)
+            setAddDeviceError('') // Reset error
             
             const deviceId = newDevice.deviceId
             
@@ -158,15 +251,22 @@ const DevicesManagement = () => {
         } catch (error) {
             console.error('Error adding device:', error)
             
+            let errorMessage = error.message || 'An error occurred while adding the device';
+            
             if (error.message.includes('deviceId already exists')) {
-                showMessage('Device with this ID already exists', 'error')
+                errorMessage = 'Device with this ID already exists';
+                setAddDeviceError(errorMessage);
             } else if (error.message.includes('MAC address already exists')) {
-                showMessage('Device with this MAC address already exists', 'error')
+                errorMessage = 'Device with this MAC address already exists';
+                setAddDeviceError(errorMessage);
             } else if (error.message.includes('userId, deviceId, macAddress, and secret are required')) {
-                showMessage('Missing required information: user ID, device ID, MAC address, or secret key', 'error')
+                errorMessage = 'Missing required information: user ID, device ID, MAC address, or secret key';
+                setAddDeviceError(errorMessage);
             } else {
-                showMessage(error.message || 'An error occurred while adding the device', 'error')
+                setAddDeviceError(errorMessage);
             }
+            
+            showMessage(errorMessage, 'error');
         } finally {
             setIsSubmitting(false)
         }
@@ -192,7 +292,20 @@ const DevicesManagement = () => {
         }
     };
 
+    const handleEditDevice = (device) => {
+        if (device.systemLocked) {
+            showMessage('Cannot edit a system locked device', 'error');
+            return;
+        }
+        setSelectedDevice(device)
+        setIsUpdateModalOpen(true)
+    }
+
     const handleDeleteDevice = (device) => {
+        if (device.systemLocked) {
+            showMessage('Cannot delete a system locked device', 'error');
+            return;
+        }
         setSelectedDevice(device)
         setIsDeleteConfirmOpen(true)
     }
@@ -223,11 +336,6 @@ const DevicesManagement = () => {
     const closeDeleteModal = () => {
         setIsDeleteConfirmOpen(false)
         setSelectedDevice(null)
-    }
-
-    const handleEditDevice = (device) => {
-        setSelectedDevice(device)
-        setIsUpdateModalOpen(true)
     }
 
     const handleUpdateDevice = async (updatedDevice) => {
@@ -267,28 +375,69 @@ const DevicesManagement = () => {
         }
     }
 
+    const handleUnlockSystem = async (deviceId, faceId) => {
+        setIsUnlockingSystem(true)
+        try {
+            console.log(`Unlocking system for device ${deviceId} with Face ID: ${faceId || 'Not provided'}`);
+            
+            const result = await postUnlockDevice(userId, deviceId, faceId);
+            
+            if (!result.success) {
+                throw new Error(result.message || 'Failed to send unlock request');
+            }
+            
+            // Hiển thị thông báo thành công nhưng không đóng modal
+            // để người dùng có thể theo dõi quá trình xác thực từ thiết bị
+            showMessage(`Unlock request sent for ${selectedDevice.deviceName}`, 'success');
+            
+            // Đặt lại trạng thái unlocking (để nút không còn disabled)
+            // nhưng không đóng modal
+            setIsUnlockingSystem(false);
+            
+            return result; // Trả về kết quả để component con có thể sử dụng
+        } catch (error) {
+            console.error('Error unlocking system:', error);
+            showMessage(`Error unlocking system: ${error.message}`, 'error');
+            
+            // Trong trường hợp lỗi, đóng modal
+            setIsUnlockingSystem(false);
+            setIsUnlockModalOpen(false);
+            setSelectedDevice(null);
+            
+            // Ném lỗi để component con có thể xử lý
+            throw error;
+        }
+    }
+
+    const openUnlockModal = (device) => {
+        // Ensure device has userId for Face ID loading
+        if (!device.userId && userId) {
+            device = { ...device, userId };
+            console.log('Added userId to device for unlocking:', device);
+        }
+        setSelectedDevice(device);
+        setIsUnlockModalOpen(true);
+    }
+
     return (
         <div className="p-6">
+            {/* Inject CSS animations */}
+            <style>{animationStyles}</style>
+            
+            {/* Thông báo kiểu mới - giống Fingerprint và FaceID */}
             {message && (
-                <div className={`mb-4 p-4 rounded-lg ${
-                    (() => {
-                        switch (messageType) {
-                            case 'error':
-                                return 'bg-red-100 text-red-700 border border-red-200';
-                            case 'locked':
-                                return 'bg-red-100 text-red-700 border border-red-200';
-                            case 'success':
-                                return 'bg-green-100 text-green-700 border border-green-200';
-                            case 'alert':
-                                return 'bg-yellow-100 text-yellow-700 border border-yellow-200';
-                            default:
-                                return 'bg-gray-100 text-gray-700 border border-gray-200';
-                        }
-                    })()
+                <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
+                    messageType === 'error' ? 'bg-red-500 text-white' : 
+                    messageType === 'info' ? 'bg-blue-500 text-white' :
+                    'bg-green-500 text-white'
                 }`}>
+                    {messageType === 'error' && <MdError className="mr-2 w-5 h-5" />}
+                    {messageType === 'info' && <MdInfo className="mr-2 w-5 h-5" />}
+                    {messageType === 'success' && <MdCheckCircle className="mr-2 w-5 h-5" />}
                     {message}
                 </div>
             )}
+            
             {/* Header */}
             <div className="mb-6">
                 <div className="flex items-center justify-between">
@@ -336,8 +485,9 @@ const DevicesManagement = () => {
                         <button 
                             onClick={fetchDevices}
                             className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-150"
+                            disabled={isLoading}
                         >
-                            <MdRefresh className="w-6 h-6" />
+                            <MdRefresh className={`w-6 h-6 ${isLoading ? 'animate-spin' : ''}`} />
                         </button>
                     </div>
                 </div>
@@ -359,7 +509,11 @@ const DevicesManagement = () => {
                     {filteredDevices.map((device) => (
                         <div 
                             key={device.deviceId}
-                            className="bg-white rounded-xl p-6 border border-gray-200 hover:border-blue-300 transition-all duration-300"
+                            className={`bg-white rounded-xl p-6 border transition-all duration-300 ${
+                                device.systemLocked 
+                                    ? 'border-orange-300 bg-orange-50' 
+                                    : 'border-gray-200 hover:border-blue-300'
+                            }`}
                         >
                             {/* Device Header */}
                             <div className="flex justify-between items-start mb-4">
@@ -371,16 +525,33 @@ const DevicesManagement = () => {
                                     <span className={getStatusBadge(device.status)}>
                                         {device.status}
                                     </span>
+                                    {device.systemLocked && (
+                                        <span className={getSystemLockBadge()}>
+                                            SYSTEM LOCKED
+                                        </span>
+                                    )}
                                     <div className="flex gap-1">
                                         <button 
                                             onClick={() => handleEditDevice(device)}
-                                            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                            disabled={device.systemLocked}
+                                            className={`p-1.5 rounded-full transition-colors ${
+                                                device.systemLocked 
+                                                ? 'text-gray-400 cursor-not-allowed bg-gray-100'
+                                                : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'
+                                            }`}
+                                            title={device.systemLocked ? "Cannot edit system locked device" : "Edit device"}
                                         >
                                             <MdEdit className="w-4 h-4" />
                                         </button>
                                         <button 
                                             onClick={() => handleDeleteDevice(device)}
-                                            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                            disabled={device.systemLocked}
+                                            className={`p-1.5 rounded-full transition-colors ${
+                                                device.systemLocked 
+                                                ? 'text-gray-400 cursor-not-allowed bg-gray-100'
+                                                : 'text-gray-500 hover:text-red-600 hover:bg-red-50'
+                                            }`}
+                                            title={device.systemLocked ? "Cannot delete system locked device" : "Delete device"}
                                         >
                                             <MdDelete className="w-4 h-4" />
                                         </button>
@@ -393,6 +564,28 @@ const DevicesManagement = () => {
                                 <MdLocationOn className="w-5 h-5 mr-2" />
                                 <span>{device.location}</span>
                             </div>
+
+                            {/* System Lock Warning */}
+                            {device.systemLocked && (
+                                <div className="mb-4 p-3 bg-orange-100 border border-orange-200 rounded-lg">
+                                    <div className="flex items-start">
+                                        <MdWarning className="w-5 h-5 text-orange-600 mt-0.5 mr-2 flex-shrink-0" />
+                                        <div>
+                                            <p className="text-sm font-medium text-orange-700">System Locked</p>
+                                            <p className="text-xs text-orange-600 mt-1">
+                                                This device was locked by the system on {new Date(device.systemLockedAt).toLocaleString()}
+                                            </p>
+                                            <button
+                                                onClick={() => openUnlockModal(device)}
+                                                className="mt-2 flex items-center px-3 py-1.5 bg-orange-200 text-orange-800 rounded hover:bg-orange-300 transition-colors text-xs font-medium"
+                                            >
+                                                <MdLockOpen className="w-4 h-4 mr-1" />
+                                                Unlock System
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Status and Battery */}
                             <div className="flex justify-between items-center mb-4">
@@ -422,11 +615,15 @@ const DevicesManagement = () => {
             )}
 
             {/* Add Device Modal */}
-            <AddDeviceModal 
+            <AddDeviceModal
                 isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
+                onClose={() => {
+                    setIsAddModalOpen(false);
+                    setAddDeviceError('');
+                }}
                 onSubmit={handleAddDevice}
                 isSubmitting={isSubmitting}
+                error={addDeviceError}
             />
 
             {/* Update Device Modal */}
@@ -449,6 +646,18 @@ const DevicesManagement = () => {
                 onConfirm={handleNextStep}
                 isDeleting={isDeletingDevice}
                 deleteResponse={deleteResponse}
+            />
+
+            {/* Unlock System Modal */}
+            <UnlockDeviceModal 
+                isOpen={isUnlockModalOpen}
+                onClose={() => {
+                    setIsUnlockModalOpen(false);
+                    setSelectedDevice(null);
+                }}
+                device={selectedDevice}
+                onConfirm={(faceId) => selectedDevice && handleUnlockSystem(selectedDevice.deviceId, faceId)}
+                isUnlocking={isUnlockingSystem}
             />
         </div>
     )

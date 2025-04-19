@@ -10,10 +10,24 @@ export const deleteFaceID = async (userId, deviceId, faceId) => {
             body: JSON.stringify({ faceId })
         })
 
-        console.log("response", response)
+        console.log("response: ", response)
 
         if (!response.ok) {
-            throw new Error('Network response was not ok')
+            const errorData = await response.json()
+            console.log("Error data:", errorData)
+            
+            if (errorData && 
+                errorData.success === false && 
+                errorData.message === "Cannot delete face. There are dependent components.") {
+                return {
+                    success: false,
+                    message: errorData.message,
+                    data: errorData.data,
+                    dependencies: true
+                }
+            }
+            
+            throw new Error(errorData.message || 'Failed to delete Face ID')
         }
 
         const data = await response.json()

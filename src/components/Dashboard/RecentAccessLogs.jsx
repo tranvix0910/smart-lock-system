@@ -11,12 +11,32 @@ import {
     MdRefresh,
     MdOutlineWarning,
     MdImage,
-    MdClose
+    MdClose,
+    MdCheckCircle,
+    MdInfo,
+    MdError
 } from 'react-icons/md'
 import { useState, useEffect } from 'react'
 import { getRecentAccessLogs } from '../../api/getRecentAccessLogs'
 import { formatDateTime } from '../../utils/formatters'
 import { getPresignUrl } from '../../api/postPresignUrl'
+
+const animationStyles = `
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.animate-fade-in-down {
+    animation: fadeInDown 0.3s ease-out;
+}
+`;
 
 export default function RecentAccess() {
     const navigate = useNavigate()
@@ -25,10 +45,21 @@ export default function RecentAccess() {
     const [error, setError] = useState(null)
     const [isRefreshing, setIsRefreshing] = useState(false)
     const [selectedImage, setSelectedImage] = useState(null)
+    const [message, setMessage] = useState('')
+    const [messageType, setMessageType] = useState('')
     
     const formatId = (id) => {
         if (!id) return 'N/A'
         return id.substring(0, 8) + '...'
+    }
+
+    const showMessage = (msg, type) => {
+        setMessage(msg)
+        setMessageType(type)
+        setTimeout(() => {
+            setMessage('')
+            setMessageType('')
+        }, 3000)
     }
 
     const fetchAccessLogs = async () => {
@@ -41,11 +72,18 @@ export default function RecentAccess() {
                     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                     .slice(0, 5)
                 setAccessLogs(sortedLogs)
+                if (sortedLogs.length === 0) {
+                    showMessage('No access logs found', 'info')
+                } else {
+                    showMessage('Access logs loaded successfully', 'success')
+                }
             } else {
                 setError(response.error)
+                showMessage(response.error || 'Failed to load access logs', 'error')
             }
         } catch (error) {
             setError(error.message)
+            showMessage(error.message || 'An error occurred while loading access logs', 'error')
         } finally {
             setLoading(false)
             setIsRefreshing(false)
@@ -98,11 +136,14 @@ export default function RecentAccess() {
             
             if (response.success && response.data && response.data.presignedUrl) {
                 setSelectedImage(response.data.presignedUrl);
+                showMessage('Image loaded successfully', 'success')
             } else {
                 console.error('Could not load image:', response.message || 'Unknown error');
+                showMessage('Could not load image: ' + (response.message || 'Unknown error'), 'error')
             }
         } catch (error) {
             console.error('Error getting presigned URL:', error);
+            showMessage('Error loading image: ' + error.message, 'error')
         }
     }
 
@@ -148,6 +189,23 @@ export default function RecentAccess() {
 
     return (
         <div className="bg-white px-6 pt-4 pb-6 rounded-lg border border-gray-200 flex-1 shadow-sm">
+            {/* Inject CSS animations */}
+            <style>{animationStyles}</style>
+            
+            {/* Thông báo kiểu mới - giống Fingerprint.jsx */}
+            {message && (
+                <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
+                    messageType === 'error' ? 'bg-red-500 text-white' : 
+                    messageType === 'info' ? 'bg-blue-500 text-white' :
+                    'bg-green-500 text-white'
+                }`}>
+                    {messageType === 'error' && <MdError className="mr-2 w-5 h-5" />}
+                    {messageType === 'info' && <MdInfo className="mr-2 w-5 h-5" />}
+                    {messageType === 'success' && <MdCheckCircle className="mr-2 w-5 h-5" />}
+                    {message}
+                </div>
+            )}
+            
             {/* Image Preview Modal */}
             {selectedImage && (
                 <div 
