@@ -14,7 +14,9 @@ import {
     MdChevronRight,
     MdCalendarToday,
     MdRefresh,
-    MdImage
+    MdCheckCircle,
+    MdInfo,
+    MdError
 } from 'react-icons/md'
 
 import { getRecentAccessLogs } from '../api/getRecentAccessLogs.jsx'
@@ -25,6 +27,23 @@ import "react-datepicker/dist/react-datepicker.css"
 import { CSVLink } from 'react-csv' 
 import { formatDateTime, formatId } from '../utils/formatters.jsx'
 
+const animationStyles = `
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.animate-fade-in-down {
+    animation: fadeInDown 0.3s ease-out;
+}
+`;
+
 export default function RecentAccessLogs() {
     const [searchTerm, setSearchTerm] = useState('')
     const [filterStatus, setFilterStatus] = useState('all')
@@ -32,12 +51,15 @@ export default function RecentAccessLogs() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [selectedImage, setSelectedImage] = useState(null)
+    const [selectedAccess, setSelectedAccess] = useState(null)
     const [currentPage, setCurrentPage] = useState(1)
     const [startDate, setStartDate] = useState(null)
     const [endDate, setEndDate] = useState(null)
     const itemsPerPage = 10
     const [isReloading, setIsReloading] = useState(false)
     const [rfidUsernames, setRfidUsernames] = useState({})
+    const [message, setMessage] = useState('')
+    const [messageType, setMessageType] = useState('')
 
     const fetchAccessLogs = async () => {
         setLoading(true)
@@ -81,9 +103,9 @@ export default function RecentAccessLogs() {
         const usernamesMap = { ...rfidUsernames }
         
         try {
-            // Fetch usernames in parallel for all RFID IDs
+            
             const promises = rfidIds.map(async (rfidId) => {
-                // Skip if we already have this ID's username or rfidId is undefined
+
                 if (usernamesMap[rfidId] || !rfidId) return
                 
                 console.log("Fetching username for RFID ID:", rfidId);
@@ -177,22 +199,111 @@ export default function RecentAccessLogs() {
     }
 
     const handleImageClick = async (access) => {
-        if (!access || !access.imageName || !access.userId || !access.deviceId) return;
+        console.log('handleImageClick called with access:', access);
         
         try {
-            const key = `users/${access.userId}/faces/${access.deviceId}/${access.imageName}`;
+            if (!access) {
+                setMessage('Cannot load image: Missing access log data');
+                setMessageType('error');
+                setTimeout(() => {
+                    setMessage('');
+                    setMessageType('');
+                }, 3000);
+                return;
+            }
+
+            setSelectedAccess(access); // Lưu thông tin access log
+
+            // Kiểm tra nếu có filePath
+            if (access.filePath) {
+                setMessage('Loading image...');
+                setMessageType('info');
+                const response = await getPresignUrl(access.filePath);
+                
+                if (response.success && response.data && response.data.presignedUrl) {
+                    setSelectedImage(response.data.presignedUrl);
+                    setMessage('Image loaded successfully');
+                    setMessageType('success');
+                    setTimeout(() => {
+                        setMessage('');
+                        setMessageType('');
+                    }, 3000);
+                    return;
+                }
+            }
+
+            // Fallback cho trường hợp không có filePath
+            const imageIdentifier = access?.imageName || access?.image;
+            const userId = access?.userId || 'unknown';
+            const deviceId = access?.deviceId || 'unknown';
             
-            console.log('Generated key for presigned URL:', key);
-                        
+            if (!imageIdentifier) {
+                if (access.createdAt) {
+                    const timestamp = new Date(access.createdAt);
+                    const formattedTimestamp = `${timestamp.getFullYear()}-${String(timestamp.getMonth() + 1).padStart(2, '0')}-${String(timestamp.getDate()).padStart(2, '0')}_${String(timestamp.getHours()).padStart(2, '0')}-${String(timestamp.getMinutes()).padStart(2, '0')}-${String(timestamp.getSeconds()).padStart(2, '0')}`;
+                    access.imageName = `${formattedTimestamp}.jpg`;
+                } else {
+                    setMessage('Cannot load image: Missing filename information');
+                    setMessageType('error');
+                    setTimeout(() => {
+                        setMessage('');
+                        setMessageType('');
+                    }, 3000);
+                    return;
+                }
+            }
+            
+            const createdAt = new Date(access.createdAt);
+            const formattedDate = `${String(createdAt.getDate()).padStart(2, '0')}-${String(createdAt.getMonth() + 1).padStart(2, '0')}-${createdAt.getFullYear()}`;
+            const filename = imageIdentifier || access.imageName;
+            
+            // Tạo key cho presigned URL
+            const key = `history/${userId}/${deviceId}/${formattedDate}/${filename}`;
+            
+            setMessage('Loading image...', 'info');
             const response = await getPresignUrl(key);
             
             if (response.success && response.data && response.data.presignedUrl) {
                 setSelectedImage(response.data.presignedUrl);
+                setMessage('Image loaded successfully');
+                setMessageType('success');
+                setTimeout(() => {
+                    setMessage('');
+                    setMessageType('');
+                }, 3000);
             } else {
-                console.error('Could not load image:', response.message || 'Unknown error');
+                // Thử tìm key thay thế
+                if (response.message && response.message.includes('not found')) {
+                    const alternativeKey = `users/${userId}/faces/${deviceId}/${filename}`;
+                    const alternativeResponse = await getPresignUrl(alternativeKey);
+                    
+                    if (alternativeResponse.success && alternativeResponse.data && alternativeResponse.data.presignedUrl) {
+                        setSelectedImage(alternativeResponse.data.presignedUrl);
+                        setMessage('Image loaded successfully');
+                        setMessageType('success');
+                        setTimeout(() => {
+                            setMessage('');
+                            setMessageType('');
+                        }, 3000);
+                        return;
+                    }
+                }
+                
+                setMessage('Failed to load image: ' + (response.message || 'Unknown error'));
+                setMessageType('error');
+                setTimeout(() => {
+                    setMessage('');
+                    setMessageType('');
+                }, 3000);
             }
         } catch (error) {
             console.error('Error getting presigned URL:', error);
+            setMessage('Error loading image: ' + error.message);
+            setMessageType('error');
+            setTimeout(() => {
+                setMessage('');
+                setMessageType('');
+            }, 3000);
         }
     }
 
@@ -257,26 +368,121 @@ export default function RecentAccessLogs() {
 
     return (
         <div className="p-6">
-            {selectedImage && (
+            {/* Inject CSS animations */}
+            <style>{animationStyles}</style>
+            
+            {/* Thông báo */}
+            {message && (
+                <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
+                    messageType === 'error' ? 'bg-red-500 text-white' : 
+                    messageType === 'info' ? 'bg-blue-500 text-white' :
+                    'bg-green-500 text-white'
+                }`}>
+                    {messageType === 'error' && <MdError className="mr-2 w-5 h-5" />}
+                    {messageType === 'info' && <MdInfo className="mr-2 w-5 h-5" />}
+                    {messageType === 'success' && <MdCheckCircle className="mr-2 w-5 h-5" />}
+                    {message}
+                </div>
+            )}
+            
+            {/* Modal */}
+            {selectedImage && selectedAccess && (
                 <div 
-                    className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
-                    onClick={() => setSelectedImage(null)}
+                    className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+                    onClick={() => {
+                        setSelectedImage(null);
+                        setSelectedAccess(null);
+                    }}
                 >
                     <div 
-                        className="bg-white p-6 rounded-lg max-w-4xl relative"
+                        className="bg-white rounded-xl w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl relative flex"
                         onClick={e => e.stopPropagation()}
                     >
-                        <button
-                            className="absolute top-2 right-2 z-10 w-8 h-8 bg-white rounded-full text-gray-500 hover:text-gray-700 flex items-center justify-center shadow-md"
-                            onClick={() => setSelectedImage(null)}
-                        >
-                            <MdClose className="w-6 h-6" />
-                        </button>
-                        <img 
-                            src={selectedImage} 
-                            alt="Access Log" 
-                            className="max-h-[80vh] rounded-lg"
-                        />
+                        {/* Left Side - Information */}
+                        <div className="w-1/3 bg-gray-50 p-6 border-r border-gray-200 overflow-y-auto">
+                            <div className="space-y-6">
+                                {/* Header */}
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-900">Face Authentication Details</h3>
+                                    <p className="text-sm text-gray-500 mt-1">Captured at {selectedAccess.createdAt ? formatDateTime(selectedAccess.createdAt) : 'Unknown time'}</p>
+                                </div>
+
+                                {/* Device Info */}
+                                <div>
+                                    <h4 className="text-sm font-medium text-gray-700 mb-2">Device Information</h4>
+                                    <div className="bg-white rounded-lg p-4 border border-gray-200">
+                                        <div className="flex items-center mb-3">
+                                            <MdDevices className="w-5 h-5 text-gray-400 mr-2" />
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-900">{selectedAccess.deviceName || 'Device'}</p>
+                                                <p className="text-xs text-gray-500">{selectedAccess.deviceId || 'Unknown ID'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <div className={`w-2 h-2 rounded-full ${selectedAccess.status === 'SUCCESS' ? 'bg-green-500' : 'bg-red-500'} mr-2`}></div>
+                                            <span className="text-sm text-gray-600">{selectedAccess.status || 'Unknown status'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* User Info */}
+                                <div>
+                                    <h4 className="text-sm font-medium text-gray-700 mb-2">User Information</h4>
+                                    <div className="bg-white rounded-lg p-4 border border-gray-200">
+                                        <div className="flex items-center">
+                                            <MdPerson className="w-5 h-5 text-gray-400 mr-2" />
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-900">{selectedAccess.userName || 'Unknown User'}</p>
+                                                <p className="text-xs text-gray-500">{selectedAccess.userId ? formatId(selectedAccess.userId) : 'No ID'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Authentication Method */}
+                                <div>
+                                    <h4 className="text-sm font-medium text-gray-700 mb-2">Authentication Method</h4>
+                                    <div className="bg-white rounded-lg p-4 border border-gray-200">
+                                        <div className="flex items-center">
+                                            <MdFace className="w-5 h-5 text-blue-500 mr-2" />
+                                            <span className="text-sm text-gray-600">Face Recognition</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Notes if any */}
+                                {selectedAccess.notes && (
+                                    <div>
+                                        <h4 className="text-sm font-medium text-gray-700 mb-2">Additional Notes</h4>
+                                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                                            <p className="text-sm text-gray-600">{selectedAccess.notes}</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Right Side - Image */}
+                        <div className="flex-1 relative bg-gray-900 flex items-center justify-center">
+                            <div className="relative w-full aspect-square flex items-center justify-center p-4">
+                                <img 
+                                    src={selectedImage} 
+                                    alt="Face ID Preview" 
+                                    className="max-w-full max-h-full object-contain transform rotate-90"
+                                />
+                            </div>
+
+                            {/* Close Button */}
+                            <button
+                                className="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full text-white flex items-center justify-center transition-colors duration-200"
+                                onClick={() => {
+                                    setSelectedImage(null);
+                                    setSelectedAccess(null);
+                                }}
+                            >
+                                <MdClose className="w-6 h-6" />
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -437,11 +643,18 @@ export default function RecentAccessLogs() {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 {log.accessType === 'FACE_ID' || log.accessType === 'FACE ID' ? (
                                                     <button
-                                                        onClick={() => handleImageClick(log)}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            console.log('Image button clicked for log:', log);
+                                                            handleImageClick(log);
+                                                        }}
                                                         className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors duration-150"
                                                         title="View face image"
                                                     >
-                                                        <MdImage className="w-5 h-5 text-gray-600" />
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+                                                            <path d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                                                        </svg>
                                                     </button>
                                                 ) : (
                                                     <span className="text-sm text-gray-400">—</span>

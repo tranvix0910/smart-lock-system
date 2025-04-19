@@ -386,15 +386,10 @@ const DevicesManagement = () => {
                 throw new Error(result.message || 'Failed to send unlock request');
             }
             
-            // Hiển thị thông báo thành công nhưng không đóng modal
-            // để người dùng có thể theo dõi quá trình xác thực từ thiết bị
             showMessage(`Unlock request sent for ${selectedDevice.deviceName}`, 'success');
-            
-            // Đặt lại trạng thái unlocking (để nút không còn disabled)
-            // nhưng không đóng modal
             setIsUnlockingSystem(false);
             
-            return result; // Trả về kết quả để component con có thể sử dụng
+            return result
         } catch (error) {
             console.error('Error unlocking system:', error);
             showMessage(`Error unlocking system: ${error.message}`, 'error');

@@ -98,55 +98,55 @@ export default function DashboardStatsGrid() {
                 </button>
             </div>
             
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-                <BoxWrapper>
-                    <div className="mb-4 flex rounded-full h-11 w-11 flex items-center justify-center bg-blue-500">
-                        <MdDeviceHub className="text-2xl text-white" />
-                    </div>
-                    <div className="mt-4 flex items-end justify-between text-neutral-700">
-                        <div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+            <BoxWrapper>
+                <div className="mb-4 flex rounded-full h-11 w-11 flex items-center justify-center bg-blue-500">
+                    <MdDeviceHub className="text-2xl text-white" />
+                </div>
+                <div className="mt-4 flex items-end justify-between text-neutral-700">
+                    <div>
                             <h4 className="text-title-md font-bold">{stats.totalDevices}</h4>
-                            <span className="text-sm font-medium">Total Devices</span>
-                        </div>
-                        <span className="flex items-center gap-1 text-sm font-medium text-meta-3">Active</span>
+                        <span className="text-sm font-medium">Total Devices</span>
                     </div>
-                </BoxWrapper>
-                <BoxWrapper>
-                    <div className="mb-4 flex rounded-full h-11 w-11 flex items-center justify-center bg-green-500">
-                        <MdLockOpen className="text-2xl text-white" />
-                    </div>
-                    <div className="mt-4 flex items-end justify-between text-neutral-700">
-                        <div>
+                    <span className="flex items-center gap-1 text-sm font-medium text-meta-3">Active</span>
+                </div>
+            </BoxWrapper>
+            <BoxWrapper>
+                <div className="mb-4 flex rounded-full h-11 w-11 flex items-center justify-center bg-green-500">
+                    <MdLockOpen className="text-2xl text-white" />
+                </div>
+                <div className="mt-4 flex items-end justify-between text-neutral-700">
+                    <div>
                             <h4 className="text-title-md font-bold">{stats.unlockedToday}</h4>
-                            <span className="text-sm font-medium">Unlocked Today</span>
-                        </div>
-                        <span className="flex items-center gap-1 text-sm font-medium text-meta-3">+12%</span>
+                        <span className="text-sm font-medium">Unlocked Today</span>
                     </div>
-                </BoxWrapper>
-                <BoxWrapper>
-                    <div className="mb-4 flex rounded-full h-11 w-11 flex items-center justify-center bg-yellow-500">
-                        <MdLock className="text-2xl text-white" />
-                    </div>
-                    <div className="mt-4 flex items-end justify-between text-neutral-700">
-                        <div>
+                    <span className="flex items-center gap-1 text-sm font-medium text-meta-3">+12%</span>
+                </div>
+            </BoxWrapper>
+            <BoxWrapper>
+                <div className="mb-4 flex rounded-full h-11 w-11 flex items-center justify-center bg-yellow-500">
+                    <MdLock className="text-2xl text-white" />
+                </div>
+                <div className="mt-4 flex items-end justify-between text-neutral-700">
+                    <div>
                             <h4 className="text-title-md font-bold">{stats.lockedNow}</h4>
-                            <span className="text-sm font-medium">Locked Now</span>
-                        </div>
-                        <span className="flex items-center gap-1 text-sm font-medium text-meta-3">Secure</span>
+                        <span className="text-sm font-medium">Locked Now</span>
                     </div>
-                </BoxWrapper>
-                <BoxWrapper>
-                    <div className="mb-4 flex rounded-full h-11 w-11 flex items-center justify-center bg-purple-500">
-                        <MdHistory className="text-2xl text-white" />
-                    </div>
-                    <div className="mt-4 flex items-end justify-between text-neutral-700">
-                        <div>
+                    <span className="flex items-center gap-1 text-sm font-medium text-meta-3">Secure</span>
+                </div>
+            </BoxWrapper>
+            <BoxWrapper>
+                <div className="mb-4 flex rounded-full h-11 w-11 flex items-center justify-center bg-purple-500">
+                    <MdHistory className="text-2xl text-white" />
+                </div>
+                <div className="mt-4 flex items-end justify-between text-neutral-700">
+                    <div>
                             <h4 className="text-title-md font-bold">{stats.totalAccessLogs}</h4>
-                            <span className="text-sm font-medium">Total Access Logs</span>
-                        </div>
-                        <span className="flex items-center gap-1 text-sm font-medium text-meta-3">Today</span>
+                        <span className="text-sm font-medium">Total Access Logs</span>
                     </div>
-                </BoxWrapper>
+                    <span className="flex items-center gap-1 text-sm font-medium text-meta-3">Today</span>
+                </div>
+            </BoxWrapper>
             </div>
         </div>
     )
