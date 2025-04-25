@@ -1,6 +1,6 @@
 import { HiOutlineViewGrid, HiOutlineUserCircle, HiOutlineCog } from 'react-icons/hi'
 import { MdLockClock, MdDeviceHub, MdFingerprint, MdFace, MdKeyboardArrowDown, MdVerifiedUser } from 'react-icons/md'
-import { RiRfidFill } from "react-icons/ri";
+import { RiRfidFill } from 'react-icons/ri'
 
 export const DASHBOARD_SIDEBAR_LINKS = [
     {
@@ -46,9 +46,8 @@ export const DASHBOARD_SIDEBAR_LINKS = [
                 path: '/dashboard/biometric/rfid',
                 icon: <RiRfidFill />
             }
-            
         ]
-    },    
+    }
 ]
 
 export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [

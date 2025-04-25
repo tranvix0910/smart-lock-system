@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { 
-    MdFingerprint, 
-    MdPersonAdd, 
-    MdDelete, 
+import {
+    MdFingerprint,
+    MdPersonAdd,
+    MdDelete,
     MdRefresh,
     MdSearch,
     MdCheckCircle,
@@ -30,7 +30,7 @@ const animationStyles = `
 .animate-fade-in-down {
     animation: fadeInDown 0.3s ease-out;
 }
-`;
+`
 
 const Fingerprint = () => {
     const [fingerprints, setFingerprints] = useState([])
@@ -61,12 +61,12 @@ const Fingerprint = () => {
         try {
             const result = await getFingerprint(currentUserId)
             if (result.success && result.data) {
-                const formattedData = result.data.map(item => ({
+                const formattedData = result.data.map((item) => ({
                     ...item,
-                    id: item.fingerprintId,
+                    id: item.fingerprintId
                 }))
                 setFingerprints(formattedData)
-                
+
                 if (formattedData.length === 0) {
                     showMessage('No fingerprints found for this user', 'info')
                 }
@@ -92,10 +92,13 @@ const Fingerprint = () => {
     }, [currentUserId])
 
     const handleAddFingerprint = (newFingerprint) => {
-        setFingerprints(prev => [...prev, {
-            ...newFingerprint,
-            id: newFingerprint.fingerprintId
-        }])
+        setFingerprints((prev) => [
+            ...prev,
+            {
+                ...newFingerprint,
+                id: newFingerprint.fingerprintId
+            }
+        ])
         showMessage('Fingerprint added successfully', 'success')
     }
 
@@ -105,7 +108,7 @@ const Fingerprint = () => {
     }
 
     const handleDeleteFingerprint = (id) => {
-        setFingerprints(prev => prev.filter(fp => fp.id !== id))
+        setFingerprints((prev) => prev.filter((fp) => fp.id !== id))
         showMessage('Fingerprint deleted successfully', 'success')
     }
 
@@ -114,34 +117,38 @@ const Fingerprint = () => {
         showMessage('Refreshing fingerprint data', 'info')
     }
 
-    const filteredFingerprints = fingerprints.filter(fp => 
-        (fp.userName && fp.userName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (fp.fingerprintId && fp.fingerprintId.toLowerCase().includes(searchTerm.toLowerCase()))
+    const filteredFingerprints = fingerprints.filter(
+        (fp) =>
+            (fp.userName && fp.userName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (fp.fingerprintId && fp.fingerprintId.toLowerCase().includes(searchTerm.toLowerCase()))
     )
 
     const formatTemplate = (template) => {
-        if (!template) return 'N/A';
-        return template.length > 15 ? `${template.substring(0, 15)}...` : template;
+        if (!template) return 'N/A'
+        return template.length > 15 ? `${template.substring(0, 15)}...` : template
     }
 
     return (
         <div className="p-6">
-            
             <style>{animationStyles}</style>
-            
+
             {message && (
-                <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
-                    messageType === 'error' ? 'bg-red-500 text-white' : 
-                    messageType === 'info' ? 'bg-blue-500 text-white' :
-                    'bg-green-500 text-white'
-                }`}>
+                <div
+                    className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
+                        messageType === 'error'
+                            ? 'bg-red-500 text-white'
+                            : messageType === 'info'
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-green-500 text-white'
+                    }`}
+                >
                     {messageType === 'error' && <MdError className="mr-2 w-5 h-5" />}
                     {messageType === 'info' && <MdInfo className="mr-2 w-5 h-5" />}
                     {messageType === 'success' && <MdCheckCircle className="mr-2 w-5 h-5" />}
                     {message}
                 </div>
             )}
-            
+
             {/* Header */}
             <div className="mb-6">
                 <div className="flex items-center gap-2">
@@ -195,18 +202,32 @@ const Fingerprint = () => {
                         <div className="flex flex-col items-center justify-center py-20 text-gray-500">
                             <MdFingerprint className="w-16 h-16 text-gray-300 mb-3" />
                             <p className="text-lg">No fingerprints found</p>
-                            <p className="text-sm text-gray-400 mt-1">Add your first fingerprint by clicking the &quot;Add New&quot; button</p>
+                            <p className="text-sm text-gray-400 mt-1">
+                                Add your first fingerprint by clicking the &quot;Add New&quot; button
+                            </p>
                         </div>
                     ) : (
                         <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fingerprint ID</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Face ID</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Template</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created At</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Fingerprint ID
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        User
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Face ID
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Template
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Created At
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
@@ -223,7 +244,9 @@ const Fingerprint = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">{fingerprint.userName}</div>
+                                            <div className="text-sm font-medium text-gray-900">
+                                                {fingerprint.userName}
+                                            </div>
                                             <div className="text-sm text-gray-500">
                                                 ID: {fingerprint.userId ? formatId(fingerprint.userId) : 'N/A'}
                                             </div>

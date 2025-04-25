@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
-import { 
+import {
     MdFace,
-    MdPersonAdd, 
-    MdDelete, 
+    MdPersonAdd,
+    MdDelete,
     MdRefresh,
     MdSearch,
-    MdClose,
     MdImage,
     MdCheckCircle,
     MdInfo,
@@ -19,6 +18,7 @@ import { MESSAGES } from '../../utils/constants'
 import { formatId } from '../../utils/formatters'
 import AddFaceIDModal from './Modal/AddFaceIDModal'
 import DeleteFaceIDModal from './Modal/DeleteFaceIDModal'
+import ImagePreviewModal from './Modal/ImagePreviewModal'
 
 const animationStyles = `
 @keyframes fadeInDown {
@@ -35,7 +35,7 @@ const animationStyles = `
 .animate-fade-in-down {
     animation: fadeInDown 0.3s ease-out;
 }
-`;
+`
 
 const FaceID = () => {
     const [faceIds, setFaceIds] = useState([])
@@ -48,6 +48,7 @@ const FaceID = () => {
     const [isLoadingDevices, setIsLoadingDevices] = useState(true)
     const [isLoadingFaces, setIsLoadingFaces] = useState(true)
     const [selectedFaceForDelete, setSelectedFaceForDelete] = useState(null)
+    const [selectedFace, setSelectedFace] = useState(null)
 
     const userAttributes = useUserAttributes()
     const userId = userAttributes?.sub
@@ -83,7 +84,7 @@ const FaceID = () => {
                 const response = await getFaceID(userId)
                 if (response.success && response.data) {
                     const faceIDArray = Array.isArray(response.data) ? response.data : [response.data]
-                    const formattedFaceIDs = faceIDArray.map(face => {
+                    const formattedFaceIDs = faceIDArray.map((face) => {
                         return {
                             id: face.faceId,
                             userId: face.userId,
@@ -91,7 +92,7 @@ const FaceID = () => {
                             deviceId: face.deviceId,
                             faceId: face.faceId,
                             createdAt: face.createdAt,
-                            imageName: face.imageName,
+                            imageName: face.imageName
                         }
                     })
                     setFaceIds(formattedFaceIDs)
@@ -107,9 +108,10 @@ const FaceID = () => {
         loadData()
     }, [userId])
 
-    const filteredFaceIds = faceIds.filter(face => 
-        (face.userName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (face.deviceId?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+    const filteredFaceIds = faceIds.filter(
+        (face) =>
+            (face.userName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+            (face.deviceId?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     )
 
     const handleDeleteClick = (face) => {
@@ -128,17 +130,17 @@ const FaceID = () => {
 
     const handleReload = async () => {
         if (!userId) return
-        
+
         try {
             setIsLoadingDevices(true)
-            
+
             const deviceList = await getDeviceByUserId(userId)
             if (deviceList && Array.isArray(deviceList)) {
                 setDevices(deviceList)
             }
-            
+
             await loadFaceIDs()
-            
+
             showMessage('Data refreshed successfully', 'success')
         } catch (error) {
             console.error('Error reloading data:', error)
@@ -149,37 +151,38 @@ const FaceID = () => {
     }
 
     const handleImageClick = async (face) => {
-        if (!face) return;
-        
+        if (!face) return
+
         try {
-            const key = `users/${face.userId}/faces/${face.deviceId}/${face.imageName}`;
-            
-            console.log('Generated key for presigned URL:', key);
-                        
-            const response = await getPresignUrl(key);
-            
+            const key = `users/${face.userId}/faces/${face.deviceId}/${face.imageName}`
+
+            console.log('Generated key for presigned URL:', key)
+
+            const response = await getPresignUrl(key)
+
             if (response.success && response.data && response.data.presignedUrl) {
-                setSelectedImage(response.data.presignedUrl);
+                setSelectedImage(response.data.presignedUrl)
+                setSelectedFace(face)
             } else {
-                showMessage('Could not load image: ' + (response.message || 'Unknown error'), 'error');
+                showMessage('Could not load image: ' + (response.message || 'Unknown error'), 'error')
             }
         } catch (error) {
-            console.error('Error getting presigned URL:', error);
-            showMessage('Error loading image: ' + error.message, 'error');
+            console.error('Error getting presigned URL:', error)
+            showMessage('Error loading image: ' + error.message, 'error')
         } finally {
-            setIsLoadingFaces(false);
+            setIsLoadingFaces(false)
         }
     }
 
     const loadFaceIDs = async () => {
-        if (!userId) return;
-        
+        if (!userId) return
+
         try {
-            setIsLoadingFaces(true);
-            const response = await getFaceID(userId);
+            setIsLoadingFaces(true)
+            const response = await getFaceID(userId)
             if (response.success) {
                 if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-                    const formattedFaceIDs = response.data.map(face => {
+                    const formattedFaceIDs = response.data.map((face) => {
                         return {
                             id: face.faceId,
                             userId: face.userId,
@@ -187,39 +190,43 @@ const FaceID = () => {
                             deviceId: face.deviceId,
                             faceId: face.faceId,
                             createdAt: face.createdAt,
-                            imageName: face.imageName,
-                        };
-                    });
-                    setFaceIds(formattedFaceIDs);
+                            imageName: face.imageName
+                        }
+                    })
+                    setFaceIds(formattedFaceIDs)
                 } else {
-                    setFaceIds([]);
+                    setFaceIds([])
                 }
             } else {
-                console.error('Error from API:', response.message);
-                showMessage(response.message || MESSAGES.ERROR.NETWORK_ERROR, 'error');
-                setFaceIds([]);
+                console.error('Error from API:', response.message)
+                showMessage(response.message || MESSAGES.ERROR.NETWORK_ERROR, 'error')
+                setFaceIds([])
             }
         } catch (error) {
-            console.error('Error loading Face IDs:', error);
-            showMessage(MESSAGES.ERROR.NETWORK_ERROR, 'error');
-            setFaceIds([]);
+            console.error('Error loading Face IDs:', error)
+            showMessage(MESSAGES.ERROR.NETWORK_ERROR, 'error')
+            setFaceIds([])
         } finally {
-            setIsLoadingFaces(false);
+            setIsLoadingFaces(false)
         }
-    };
+    }
 
     return (
         <div className="p-6">
             {/* Inject CSS animations */}
             <style>{animationStyles}</style>
-            
+
             {/* Thông báo kiểu mới - giống Fingerprint.jsx */}
             {message && (
-                <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
-                    messageType === 'error' ? 'bg-red-500 text-white' : 
-                    messageType === 'info' ? 'bg-blue-500 text-white' :
-                    'bg-green-500 text-white'
-                }`}>
+                <div
+                    className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
+                        messageType === 'error'
+                            ? 'bg-red-500 text-white'
+                            : messageType === 'info'
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-green-500 text-white'
+                    }`}
+                >
                     {messageType === 'error' && <MdError className="mr-2 w-5 h-5" />}
                     {messageType === 'info' && <MdInfo className="mr-2 w-5 h-5" />}
                     {messageType === 'success' && <MdCheckCircle className="mr-2 w-5 h-5" />}
@@ -292,11 +299,21 @@ const FaceID = () => {
                         <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Device ID</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Preview</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created At</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Device ID
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        User
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Preview
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Created At
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
@@ -345,7 +362,7 @@ const FaceID = () => {
             </div>
 
             {/* Add Face ID Modal */}
-            <AddFaceIDModal 
+            <AddFaceIDModal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
                 userId={userId}
@@ -365,32 +382,16 @@ const FaceID = () => {
             />
 
             {/* Image Preview Modal */}
-            {selectedImage && (
-                <div 
-                    className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-                    onClick={() => setSelectedImage(null)}
-                >
-                    <div 
-                        className="bg-white rounded-lg p-10 max-w-3xl relative overflow-hidden"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <button
-                            className="absolute top-2 right-2 z-10 w-8 h-8 bg-white rounded-full text-gray-500 hover:text-gray-700 flex items-center justify-center shadow-md"
-                            onClick={() => setSelectedImage(null)}
-                        >
-                            <MdClose className="w-6 h-6" />
-                        </button>
-                        
-                        <div className="pt-4">
-                            <img 
-                                src={selectedImage} 
-                                alt="Face ID Preview" 
-                                className="max-h-[70vh] w-auto object-contain mx-auto rounded-lg"
-                            />
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ImagePreviewModal
+                isOpen={!!selectedImage}
+                onClose={() => {
+                    setSelectedImage(null)
+                    setSelectedFace(null)
+                }}
+                imageUrl={selectedImage}
+                data={selectedFace}
+                type="face"
+            />
         </div>
     )
 }

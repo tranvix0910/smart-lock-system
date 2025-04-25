@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { 
-    MdSearch, 
-    MdAccessTime, 
-    MdPerson, 
-    MdDevices, 
-    MdFingerprint, 
-    MdKey, 
+import {
+    MdSearch,
+    MdAccessTime,
+    MdPerson,
+    MdDevices,
+    MdFingerprint,
+    MdKey,
     MdSmartphone,
     MdFace,
     MdClose,
@@ -23,8 +23,8 @@ import { getRecentAccessLogs } from '../api/getRecentAccessLogs.jsx'
 import { getUsernameByRFIDCard } from '../api/RFIDCard.jsx'
 import { getPresignUrl } from '../api/postPresignUrl'
 import DatePicker from 'react-datepicker'
-import "react-datepicker/dist/react-datepicker.css"
-import { CSVLink } from 'react-csv' 
+import 'react-datepicker/dist/react-datepicker.css'
+import { CSVLink } from 'react-csv'
 import { formatDateTime, formatId } from '../utils/formatters.jsx'
 
 const animationStyles = `
@@ -42,7 +42,7 @@ const animationStyles = `
 .animate-fade-in-down {
     animation: fadeInDown 0.3s ease-out;
 }
-`;
+`
 
 export default function RecentAccessLogs() {
     const [searchTerm, setSearchTerm] = useState('')
@@ -68,25 +68,23 @@ export default function RecentAccessLogs() {
             const response = await getRecentAccessLogs()
             if (response.success) {
                 // Sort logs by createdAt in descending order (newest first)
-                const sortedLogs = response.data.sort((a, b) => 
-                    new Date(b.createdAt) - new Date(a.createdAt)
-                )
+                const sortedLogs = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                 setAccessLogs(sortedLogs)
-                
+
                 // Process RFID records to fetch usernames
-                const rfidLogs = sortedLogs.filter(log => log.accessType === 'RFID')
-                console.log("RFID Logs:", rfidLogs);
-                
+                const rfidLogs = sortedLogs.filter((log) => log.accessType === 'RFID')
+                console.log('RFID Logs:', rfidLogs)
+
                 // For RFID logs, userName contains the UID of the RFID card
                 if (rfidLogs.length > 0) {
-                    console.log("Sample RFID log:", rfidLogs[0]);
-                    
+                    console.log('Sample RFID log:', rfidLogs[0])
+
                     // Extract unique RFID UIDs from userName field
-                    const uniqueRfidIds = [...new Set(rfidLogs.map(log => log.userName))];
-                    console.log("Unique RFID UIDs:", uniqueRfidIds);
-                    
+                    const uniqueRfidIds = [...new Set(rfidLogs.map((log) => log.userName))]
+                    console.log('Unique RFID UIDs:', uniqueRfidIds)
+
                     // Fetch usernames for all unique RFID IDs
-                    await fetchRfidUsernames(uniqueRfidIds);
+                    await fetchRfidUsernames(uniqueRfidIds)
                 }
             } else {
                 setError(response.error)
@@ -101,15 +99,13 @@ export default function RecentAccessLogs() {
 
     const fetchRfidUsernames = async (rfidIds) => {
         const usernamesMap = { ...rfidUsernames }
-        
-        try {
-            
-            const promises = rfidIds.map(async (rfidId) => {
 
+        try {
+            const promises = rfidIds.map(async (rfidId) => {
                 if (usernamesMap[rfidId] || !rfidId) return
-                
-                console.log("Fetching username for RFID ID:", rfidId);
-                
+
+                console.log('Fetching username for RFID ID:', rfidId)
+
                 try {
                     const result = await getUsernameByRFIDCard(rfidId)
                     if (result.success && result.data) {
@@ -119,7 +115,7 @@ export default function RecentAccessLogs() {
                     console.error(`Error fetching username for RFID ${rfidId}:`, err)
                 }
             })
-            
+
             await Promise.all(promises)
             setRfidUsernames(usernamesMap)
         } catch (error) {
@@ -131,33 +127,28 @@ export default function RecentAccessLogs() {
         fetchAccessLogs()
     }, [])
 
-    const filteredLogs = accessLogs.filter(log => {
-        const matchesSearch = 
+    const filteredLogs = accessLogs.filter((log) => {
+        const matchesSearch =
             log.deviceId.toLowerCase().includes(searchTerm.toLowerCase()) ||
             log.userName.toLowerCase().includes(searchTerm.toLowerCase())
 
         const matchesStatus = filterStatus === 'all' || log.status === filterStatus.toUpperCase()
 
         const logDate = new Date(log.createdAt)
-        const matchesDateRange = (!startDate || logDate >= startDate) && 
-                               (!endDate || logDate <= endDate)
+        const matchesDateRange = (!startDate || logDate >= startDate) && (!endDate || logDate <= endDate)
 
         return matchesSearch && matchesStatus && matchesDateRange
     })
 
     // Phân trang
     const totalPages = Math.ceil(filteredLogs.length / itemsPerPage)
-    const paginatedLogs = filteredLogs.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    )
+    const paginatedLogs = filteredLogs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
-    const csvData = filteredLogs.map(log => {
+    const csvData = filteredLogs.map((log) => {
         // For RFID logs, userName contains the UID and we may have a real username in the mapping
-        const username = log.accessType === 'RFID' && rfidUsernames[log.userName] 
-            ? rfidUsernames[log.userName] 
-            : log.userName;
-            
+        const username =
+            log.accessType === 'RFID' && rfidUsernames[log.userName] ? rfidUsernames[log.userName] : log.userName
+
         return {
             Time: formatDateTime(log.createdAt),
             Device: log.deviceId,
@@ -167,8 +158,8 @@ export default function RecentAccessLogs() {
             Method: log.accessType,
             Status: log.status,
             Notes: log.notes
-        };
-    });
+        }
+    })
 
     const getStatusBadge = (status) => {
         const baseClasses = 'px-3 py-1 rounded-full text-xs font-medium'
@@ -183,7 +174,7 @@ export default function RecentAccessLogs() {
     }
 
     const getMethodIcon = (method) => {
-        const iconClass = "w-5 h-5 mr-2 text-[#24303f]"
+        const iconClass = 'w-5 h-5 mr-2 text-[#24303f]'
         switch (method) {
             case 'FINGERPRINT':
                 return <MdFingerprint className={iconClass} title="Fingerprint Authentication" />
@@ -192,150 +183,154 @@ export default function RecentAccessLogs() {
             case 'WEB_APP':
                 return <MdSmartphone className={iconClass} title="Web App Access" />
             case 'FACE_ID':
-                return <MdFace className={iconClass} title="Face Recognition" />    
+                return <MdFace className={iconClass} title="Face Recognition" />
             default:
                 return <MdKey className={iconClass} title="Other Method" />
         }
     }
 
     const handleImageClick = async (access) => {
-        console.log('handleImageClick called with access:', access);
-        
+        console.log('handleImageClick called with access:', access)
+
         try {
             if (!access) {
-                setMessage('Cannot load image: Missing access log data');
-                setMessageType('error');
+                setMessage('Cannot load image: Missing access log data')
+                setMessageType('error')
                 setTimeout(() => {
-                    setMessage('');
-                    setMessageType('');
-                }, 3000);
-                return;
+                    setMessage('')
+                    setMessageType('')
+                }, 3000)
+                return
             }
 
-            setSelectedAccess(access); // Lưu thông tin access log
+            setSelectedAccess(access) // Lưu thông tin access log
 
             // Kiểm tra nếu có filePath
             if (access.filePath) {
-                setMessage('Loading image...');
-                setMessageType('info');
-                const response = await getPresignUrl(access.filePath);
-                
+                setMessage('Loading image...')
+                setMessageType('info')
+                const response = await getPresignUrl(access.filePath)
+
                 if (response.success && response.data && response.data.presignedUrl) {
-                    setSelectedImage(response.data.presignedUrl);
-                    setMessage('Image loaded successfully');
-                    setMessageType('success');
+                    setSelectedImage(response.data.presignedUrl)
+                    setMessage('Image loaded successfully')
+                    setMessageType('success')
                     setTimeout(() => {
-                        setMessage('');
-                        setMessageType('');
-                    }, 3000);
-                    return;
+                        setMessage('')
+                        setMessageType('')
+                    }, 3000)
+                    return
                 }
             }
 
             // Fallback cho trường hợp không có filePath
-            const imageIdentifier = access?.imageName || access?.image;
-            const userId = access?.userId || 'unknown';
-            const deviceId = access?.deviceId || 'unknown';
-            
+            const imageIdentifier = access?.imageName || access?.image
+            const userId = access?.userId || 'unknown'
+            const deviceId = access?.deviceId || 'unknown'
+
             if (!imageIdentifier) {
                 if (access.createdAt) {
-                    const timestamp = new Date(access.createdAt);
-                    const formattedTimestamp = `${timestamp.getFullYear()}-${String(timestamp.getMonth() + 1).padStart(2, '0')}-${String(timestamp.getDate()).padStart(2, '0')}_${String(timestamp.getHours()).padStart(2, '0')}-${String(timestamp.getMinutes()).padStart(2, '0')}-${String(timestamp.getSeconds()).padStart(2, '0')}`;
-                    access.imageName = `${formattedTimestamp}.jpg`;
+                    const timestamp = new Date(access.createdAt)
+                    const formattedTimestamp = `${timestamp.getFullYear()}-${String(timestamp.getMonth() + 1).padStart(2, '0')}-${String(timestamp.getDate()).padStart(2, '0')}_${String(timestamp.getHours()).padStart(2, '0')}-${String(timestamp.getMinutes()).padStart(2, '0')}-${String(timestamp.getSeconds()).padStart(2, '0')}`
+                    access.imageName = `${formattedTimestamp}.jpg`
                 } else {
-                    setMessage('Cannot load image: Missing filename information');
-                    setMessageType('error');
+                    setMessage('Cannot load image: Missing filename information')
+                    setMessageType('error')
                     setTimeout(() => {
-                        setMessage('');
-                        setMessageType('');
-                    }, 3000);
-                    return;
+                        setMessage('')
+                        setMessageType('')
+                    }, 3000)
+                    return
                 }
             }
-            
-            const createdAt = new Date(access.createdAt);
-            const formattedDate = `${String(createdAt.getDate()).padStart(2, '0')}-${String(createdAt.getMonth() + 1).padStart(2, '0')}-${createdAt.getFullYear()}`;
-            const filename = imageIdentifier || access.imageName;
-            
+
+            const createdAt = new Date(access.createdAt)
+            const formattedDate = `${String(createdAt.getDate()).padStart(2, '0')}-${String(createdAt.getMonth() + 1).padStart(2, '0')}-${createdAt.getFullYear()}`
+            const filename = imageIdentifier || access.imageName
+
             // Tạo key cho presigned URL
-            const key = `history/${userId}/${deviceId}/${formattedDate}/${filename}`;
-            
-            setMessage('Loading image...', 'info');
-            const response = await getPresignUrl(key);
-            
+            const key = `history/${userId}/${deviceId}/${formattedDate}/${filename}`
+
+            setMessage('Loading image...', 'info')
+            const response = await getPresignUrl(key)
+
             if (response.success && response.data && response.data.presignedUrl) {
-                setSelectedImage(response.data.presignedUrl);
-                setMessage('Image loaded successfully');
-                setMessageType('success');
+                setSelectedImage(response.data.presignedUrl)
+                setMessage('Image loaded successfully')
+                setMessageType('success')
                 setTimeout(() => {
-                    setMessage('');
-                    setMessageType('');
-                }, 3000);
+                    setMessage('')
+                    setMessageType('')
+                }, 3000)
             } else {
                 // Thử tìm key thay thế
                 if (response.message && response.message.includes('not found')) {
-                    const alternativeKey = `users/${userId}/faces/${deviceId}/${filename}`;
-                    const alternativeResponse = await getPresignUrl(alternativeKey);
-                    
-                    if (alternativeResponse.success && alternativeResponse.data && alternativeResponse.data.presignedUrl) {
-                        setSelectedImage(alternativeResponse.data.presignedUrl);
-                        setMessage('Image loaded successfully');
-                        setMessageType('success');
+                    const alternativeKey = `users/${userId}/faces/${deviceId}/${filename}`
+                    const alternativeResponse = await getPresignUrl(alternativeKey)
+
+                    if (
+                        alternativeResponse.success &&
+                        alternativeResponse.data &&
+                        alternativeResponse.data.presignedUrl
+                    ) {
+                        setSelectedImage(alternativeResponse.data.presignedUrl)
+                        setMessage('Image loaded successfully')
+                        setMessageType('success')
                         setTimeout(() => {
-                            setMessage('');
-                            setMessageType('');
-                        }, 3000);
-                        return;
+                            setMessage('')
+                            setMessageType('')
+                        }, 3000)
+                        return
                     }
                 }
-                
-                setMessage('Failed to load image: ' + (response.message || 'Unknown error'));
-                setMessageType('error');
+
+                setMessage('Failed to load image: ' + (response.message || 'Unknown error'))
+                setMessageType('error')
                 setTimeout(() => {
-                    setMessage('');
-                    setMessageType('');
-                }, 3000);
+                    setMessage('')
+                    setMessageType('')
+                }, 3000)
             }
         } catch (error) {
-            console.error('Error getting presigned URL:', error);
-            setMessage('Error loading image: ' + error.message);
-            setMessageType('error');
+            console.error('Error getting presigned URL:', error)
+            setMessage('Error loading image: ' + error.message)
+            setMessageType('error')
             setTimeout(() => {
-                setMessage('');
-                setMessageType('');
-            }, 3000);
+                setMessage('')
+                setMessageType('')
+            }, 3000)
         }
     }
 
     const getUserDisplayName = (log) => {
         if (log.accessType === 'RFID') {
             // For RFID logs, userName contains the RFID UID
-            const rfidUid = log.userName;
+            const rfidUid = log.userName
             // Get the user's real name from our mapping if available
-            const realName = rfidUsernames[rfidUid];
-            
+            const realName = rfidUsernames[rfidUid]
+
             if (realName) {
                 return (
                     <>
                         <div className="text-sm font-medium text-gray-900">{realName}</div>
                         <div className="text-xs text-gray-500">RFID: {rfidUid}</div>
                     </>
-                );
+                )
             }
-            
+
             return (
                 <>
                     <div className="text-sm font-medium text-gray-900">RFID User</div>
                     <div className="text-xs text-gray-500">RFID: {rfidUid}</div>
                 </>
-            );
+            )
         } else if (log.accessType === 'FINGERPRINT') {
             return (
                 <>
                     <div className="text-sm font-medium text-gray-900">{log.userName}</div>
                     <div className="text-xs text-gray-500">Fingerprint ID</div>
                 </>
-            );
+            )
         } else {
             return (
                 <>
@@ -344,9 +339,9 @@ export default function RecentAccessLogs() {
                         {formatId(log.userId)}
                     </div>
                 </>
-            );
+            )
         }
-    };
+    }
 
     if (loading) {
         return (
@@ -359,9 +354,7 @@ export default function RecentAccessLogs() {
     if (error) {
         return (
             <div className="flex justify-center items-center h-screen">
-                <div className="bg-red-100 text-red-700 p-4 rounded-lg">
-                    Error: {error}
-                </div>
+                <div className="bg-red-100 text-red-700 p-4 rounded-lg">Error: {error}</div>
             </div>
         )
     }
@@ -370,33 +363,37 @@ export default function RecentAccessLogs() {
         <div className="p-6">
             {/* Inject CSS animations */}
             <style>{animationStyles}</style>
-            
+
             {/* Thông báo */}
             {message && (
-                <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
-                    messageType === 'error' ? 'bg-red-500 text-white' : 
-                    messageType === 'info' ? 'bg-blue-500 text-white' :
-                    'bg-green-500 text-white'
-                }`}>
+                <div
+                    className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
+                        messageType === 'error'
+                            ? 'bg-red-500 text-white'
+                            : messageType === 'info'
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-green-500 text-white'
+                    }`}
+                >
                     {messageType === 'error' && <MdError className="mr-2 w-5 h-5" />}
                     {messageType === 'info' && <MdInfo className="mr-2 w-5 h-5" />}
                     {messageType === 'success' && <MdCheckCircle className="mr-2 w-5 h-5" />}
                     {message}
                 </div>
             )}
-            
+
             {/* Modal */}
             {selectedImage && selectedAccess && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
                     onClick={() => {
-                        setSelectedImage(null);
-                        setSelectedAccess(null);
+                        setSelectedImage(null)
+                        setSelectedAccess(null)
                     }}
                 >
-                    <div 
+                    <div
                         className="bg-white rounded-xl w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl relative flex"
-                        onClick={e => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                     >
                         {/* Left Side - Information */}
                         <div className="w-1/3 bg-gray-50 p-6 border-r border-gray-200 overflow-y-auto">
@@ -404,7 +401,12 @@ export default function RecentAccessLogs() {
                                 {/* Header */}
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-900">Face Authentication Details</h3>
-                                    <p className="text-sm text-gray-500 mt-1">Captured at {selectedAccess.createdAt ? formatDateTime(selectedAccess.createdAt) : 'Unknown time'}</p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Captured at{' '}
+                                        {selectedAccess.createdAt
+                                            ? formatDateTime(selectedAccess.createdAt)
+                                            : 'Unknown time'}
+                                    </p>
                                 </div>
 
                                 {/* Device Info */}
@@ -414,13 +416,21 @@ export default function RecentAccessLogs() {
                                         <div className="flex items-center mb-3">
                                             <MdDevices className="w-5 h-5 text-gray-400 mr-2" />
                                             <div>
-                                                <p className="text-sm font-medium text-gray-900">{selectedAccess.deviceName || 'Device'}</p>
-                                                <p className="text-xs text-gray-500">{selectedAccess.deviceId || 'Unknown ID'}</p>
+                                                <p className="text-sm font-medium text-gray-900">
+                                                    {selectedAccess.deviceName || 'Device'}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {selectedAccess.deviceId || 'Unknown ID'}
+                                                </p>
                                             </div>
                                         </div>
                                         <div className="flex items-center">
-                                            <div className={`w-2 h-2 rounded-full ${selectedAccess.status === 'SUCCESS' ? 'bg-green-500' : 'bg-red-500'} mr-2`}></div>
-                                            <span className="text-sm text-gray-600">{selectedAccess.status || 'Unknown status'}</span>
+                                            <div
+                                                className={`w-2 h-2 rounded-full ${selectedAccess.status === 'SUCCESS' ? 'bg-green-500' : 'bg-red-500'} mr-2`}
+                                            ></div>
+                                            <span className="text-sm text-gray-600">
+                                                {selectedAccess.status || 'Unknown status'}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -432,8 +442,12 @@ export default function RecentAccessLogs() {
                                         <div className="flex items-center">
                                             <MdPerson className="w-5 h-5 text-gray-400 mr-2" />
                                             <div>
-                                                <p className="text-sm font-medium text-gray-900">{selectedAccess.userName || 'Unknown User'}</p>
-                                                <p className="text-xs text-gray-500">{selectedAccess.userId ? formatId(selectedAccess.userId) : 'No ID'}</p>
+                                                <p className="text-sm font-medium text-gray-900">
+                                                    {selectedAccess.userName || 'Unknown User'}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {selectedAccess.userId ? formatId(selectedAccess.userId) : 'No ID'}
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
@@ -465,9 +479,9 @@ export default function RecentAccessLogs() {
                         {/* Right Side - Image */}
                         <div className="flex-1 relative bg-gray-900 flex items-center justify-center">
                             <div className="relative w-full aspect-square flex items-center justify-center p-4">
-                                <img 
-                                    src={selectedImage} 
-                                    alt="Face ID Preview" 
+                                <img
+                                    src={selectedImage}
+                                    alt="Face ID Preview"
                                     className="max-w-full max-h-full object-contain transform rotate-90"
                                 />
                             </div>
@@ -476,8 +490,8 @@ export default function RecentAccessLogs() {
                             <button
                                 className="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full text-white flex items-center justify-center transition-colors duration-200"
                                 onClick={() => {
-                                    setSelectedImage(null);
-                                    setSelectedAccess(null);
+                                    setSelectedImage(null)
+                                    setSelectedAccess(null)
                                 }}
                             >
                                 <MdClose className="w-6 h-6" />
@@ -509,13 +523,13 @@ export default function RecentAccessLogs() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    
+
                     <div className="flex flex-wrap gap-4 items-center">
                         <div className="flex items-center gap-2">
                             <MdCalendarToday className="text-gray-400" />
                             <DatePicker
                                 selected={startDate}
-                                onChange={date => setStartDate(date)}
+                                onChange={(date) => setStartDate(date)}
                                 selectsStart
                                 startDate={startDate}
                                 endDate={endDate}
@@ -525,7 +539,7 @@ export default function RecentAccessLogs() {
                             />
                             <DatePicker
                                 selected={endDate}
-                                onChange={date => setEndDate(date)}
+                                onChange={(date) => setEndDate(date)}
                                 selectsEnd
                                 startDate={startDate}
                                 endDate={endDate}
@@ -546,7 +560,7 @@ export default function RecentAccessLogs() {
                             <option value="failed">Failed</option>
                         </select>
 
-                        <CSVLink 
+                        <CSVLink
                             data={csvData}
                             filename={`access-logs-${new Date().toISOString()}.csv`}
                             className="flex items-center gap-2 px-4 py-2 bg-[#ebf45d] text-[#24303f] rounded-lg hover:bg-[#d9e154] transition-colors duration-150"
@@ -574,13 +588,27 @@ export default function RecentAccessLogs() {
                             <table className="w-full">
                                 <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Time
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Device
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            User
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Method
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Notes
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Image
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -589,14 +617,18 @@ export default function RecentAccessLogs() {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
                                                     <MdAccessTime className="w-5 h-5 mr-2 text-gray-400" />
-                                                    <span className="text-sm text-gray-900">{formatDateTime(log.createdAt)}</span>
+                                                    <span className="text-sm text-gray-900">
+                                                        {formatDateTime(log.createdAt)}
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
                                                     <MdDevices className="w-5 h-5 mr-2 text-gray-400" />
                                                     <div>
-                                                        <div className="text-sm font-medium text-gray-900">{log.deviceId}</div>
+                                                        <div className="text-sm font-medium text-gray-900">
+                                                            {log.deviceId}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -605,23 +637,17 @@ export default function RecentAccessLogs() {
                                                     {log.accessType === 'RFID' ? (
                                                         <>
                                                             <MdKey className="w-5 h-5 mr-2 text-gray-400" />
-                                                            <div>
-                                                                {getUserDisplayName(log)}
-                                                            </div>
+                                                            <div>{getUserDisplayName(log)}</div>
                                                         </>
                                                     ) : log.accessType === 'FINGERPRINT' ? (
                                                         <>
                                                             <MdFingerprint className="w-5 h-5 mr-2 text-gray-400" />
-                                                            <div>
-                                                                {getUserDisplayName(log)}
-                                                            </div>
+                                                            <div>{getUserDisplayName(log)}</div>
                                                         </>
                                                     ) : (
                                                         <>
                                                             <MdPerson className="w-5 h-5 mr-2 text-gray-400" />
-                                                            <div>
-                                                                {getUserDisplayName(log)}
-                                                            </div>
+                                                            <div>{getUserDisplayName(log)}</div>
                                                         </>
                                                     )}
                                                 </div>
@@ -629,13 +655,13 @@ export default function RecentAccessLogs() {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
                                                     {getMethodIcon(log.accessType)}
-                                                    <span className="text-sm text-gray-900">{log.accessType.replace('_', ' ')}</span>
+                                                    <span className="text-sm text-gray-900">
+                                                        {log.accessType.replace('_', ' ')}
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={getStatusBadge(log.status)}>
-                                                    {log.status}
-                                                </span>
+                                                <span className={getStatusBadge(log.status)}>{log.status}</span>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className="text-sm text-gray-600">{log.notes}</span>
@@ -645,15 +671,20 @@ export default function RecentAccessLogs() {
                                                     <button
                                                         type="button"
                                                         onClick={() => {
-                                                            console.log('Image button clicked for log:', log);
-                                                            handleImageClick(log);
+                                                            console.log('Image button clicked for log:', log)
+                                                            handleImageClick(log)
                                                         }}
                                                         className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors duration-150"
                                                         title="View face image"
                                                     >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
-                                                            <path d="M0 0h24v24H0z" fill="none"/>
-                                                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            className="w-5 h-5 text-gray-600"
+                                                            viewBox="0 0 24 24"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
                                                         </svg>
                                                     </button>
                                                 ) : (
@@ -669,18 +700,20 @@ export default function RecentAccessLogs() {
                         {/* Pagination */}
                         <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
                             <div className="text-sm text-gray-500">
-                                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredLogs.length)} of {filteredLogs.length} entries
+                                Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
+                                {Math.min(currentPage * itemsPerPage, filteredLogs.length)} of {filteredLogs.length}{' '}
+                                entries
                             </div>
                             <div className="flex gap-2">
                                 <button
-                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                                     disabled={currentPage === 1}
                                     className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#ebf45d]"
                                 >
                                     <MdChevronLeft className="w-5 h-5" />
                                 </button>
                                 <button
-                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                                     disabled={currentPage === totalPages}
                                     className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#ebf45d]"
                                 >
@@ -696,18 +729,18 @@ export default function RecentAccessLogs() {
                         </div>
                         <h3 className="text-lg font-medium text-gray-900 mb-1">No access logs found</h3>
                         <p className="text-gray-500 max-w-md mb-6">
-                            {searchTerm || filterStatus !== 'all' || startDate || endDate ? 
-                                "No access logs match your current filters. Try adjusting your search criteria or clearing filters." : 
-                                "There are no access logs recorded in the system yet. Access logs will appear here once users begin interacting with devices."}
+                            {searchTerm || filterStatus !== 'all' || startDate || endDate
+                                ? 'No access logs match your current filters. Try adjusting your search criteria or clearing filters.'
+                                : 'There are no access logs recorded in the system yet. Access logs will appear here once users begin interacting with devices.'}
                         </p>
                         <div className="flex space-x-4">
                             {(searchTerm || filterStatus !== 'all' || startDate || endDate) && (
                                 <button
                                     onClick={() => {
-                                        setSearchTerm('');
-                                        setFilterStatus('all');
-                                        setStartDate(null);
-                                        setEndDate(null);
+                                        setSearchTerm('')
+                                        setFilterStatus('all')
+                                        setStartDate(null)
+                                        setEndDate(null)
                                     }}
                                     className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-150"
                                 >

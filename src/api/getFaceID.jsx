@@ -45,5 +45,3 @@ export const getFaceID = async (userId) => {
         }
     }
 }
-
-

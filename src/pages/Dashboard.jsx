@@ -8,7 +8,7 @@ const Dashboard = () => {
             <DashboardStats />
             <DeviceManagement />
             <div className="flex flex-row gap-4 w-full">
-                <RecentAttended />  
+                <RecentAttended />
             </div>
         </div>
     )

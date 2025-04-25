@@ -1,5 +1,4 @@
 import './App.css'
-
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Layout from './components/Shared/Layout'
@@ -11,11 +10,9 @@ import Fingerprint from './components/BiometricManagement/Fingerprint'
 import FaceId from './components/BiometricManagement/FaceID'
 import RFID from './components/BiometricManagement/RFID'
 import { Routes, Route, Navigate } from 'react-router-dom'
-
 import PropTypes from 'prop-types'
 import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
-
 import { Amplify } from 'aws-amplify'
 import outputs from '../amplify_outputs.json'
 import { components, customStyles } from './pages/Login'
@@ -67,8 +64,8 @@ function App() {
                 <Route
                     path="/login"
                     element={
-                        <Authenticator 
-                            formFields={formFields} 
+                        <Authenticator
+                            formFields={formFields}
                             signUpAttributes={signUpAttributes}
                             components={components}
                         >

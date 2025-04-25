@@ -19,17 +19,17 @@ const Layout = () => {
     return (
         <div className="bg-neutral-100 h-screen w-screen overflow-hidden flex flex-col lg:flex-row">
             <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-            
+
             <div className="flex flex-col flex-1 max-h-screen overflow-hidden relative">
                 <Header toggleSidebar={toggleSidebar} />
                 <div className="flex-1 p-2 sm:p-4 min-h-0 overflow-auto bg-gray-50">
                     <Outlet />
                 </div>
             </div>
-            
+
             {/* Overlay for mobile when sidebar is open */}
             {isSidebarOpen && (
-                <div 
+                <div
                     className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-20"
                     onClick={() => setIsSidebarOpen(false)}
                 ></div>

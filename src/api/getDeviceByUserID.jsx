@@ -4,12 +4,12 @@ export const getDeviceByUserId = async (userId) => {
     try {
         console.log('Starting to fetch devices...')
         console.log('API URL:', `${API_URL}/devices/${userId}`)
-        
+
         const response = await fetch(`${API_URL}/devices/${userId}`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-            },
+                'Content-Type': 'application/json'
+            }
         })
 
         console.log('Response status:', response.status)
@@ -23,7 +23,7 @@ export const getDeviceByUserId = async (userId) => {
 
         const responseData = await response.json()
         console.log('Raw API Response:', responseData)
-        
+
         if (!responseData) {
             throw new Error('Empty response from server')
         }
@@ -40,10 +40,10 @@ export const getDeviceByUserId = async (userId) => {
         // Log full device objects to see all available properties
         console.log('Raw device objects:', JSON.stringify(responseData.data, null, 2))
 
-        const devices = responseData.data.map(device => {
-            console.log(`Device ${device.deviceId} systemLocked:`, device.systemLocked);
-            console.log(`Device ${device.deviceId} systemLockedAt:`, device.systemLockedAt);
-            
+        const devices = responseData.data.map((device) => {
+            console.log(`Device ${device.deviceId} systemLocked:`, device.systemLocked)
+            console.log(`Device ${device.deviceId} systemLockedAt:`, device.systemLockedAt)
+
             return {
                 deviceId: device.deviceId,
                 deviceName: device.deviceName,
@@ -53,7 +53,7 @@ export const getDeviceByUserId = async (userId) => {
                 batteryLevel: device.batteryLevel,
                 systemLocked: device.systemLocked || false,
                 systemLockedAt: device.systemLockedAt || null
-            };
+            }
         })
 
         console.log('Processed devices:', devices)

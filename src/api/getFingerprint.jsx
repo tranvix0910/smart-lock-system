@@ -8,23 +8,22 @@ export const getFingerprint = async (userId) => {
                 'Content-Type': 'application/json'
             },
             credentials: 'include'
-        });
+        })
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to fetch fingerprints');
+            const errorData = await response.json()
+            throw new Error(errorData.message || 'Failed to fetch fingerprints')
         }
 
-        const result = await response.json();
-        
+        const result = await response.json()
+
         if (!result.success) {
-            throw new Error(result.message || 'Failed to retrieve fingerprints');
+            throw new Error(result.message || 'Failed to retrieve fingerprints')
         }
-        
-        return result;
+
+        return result
     } catch (error) {
-        console.error('Error fetching fingerprints:', error);
-        throw error;
+        console.error('Error fetching fingerprints:', error)
+        throw error
     }
 }
-

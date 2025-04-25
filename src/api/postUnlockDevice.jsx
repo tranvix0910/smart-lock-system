@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:4000/api';
+const API_URL = 'http://localhost:4000/api'
 
 const postUnlockDevice = async (userId, deviceId, faceId) => {
     try {
@@ -11,27 +11,26 @@ const postUnlockDevice = async (userId, deviceId, faceId) => {
                 faceId: faceId || null
             }),
             credentials: 'include'
-        });
+        })
 
-        const data = await response.json();
-        
+        const data = await response.json()
+
         if (!response.ok) {
-            throw new Error(data.message || 'Failed to unlock device');
+            throw new Error(data.message || 'Failed to unlock device')
         }
-        
+
         return {
             success: true,
             message: data.message,
             data: data.data
-        };
+        }
     } catch (error) {
-        console.error('Error in postUnlockDevice:', error);
+        console.error('Error in postUnlockDevice:', error)
         return {
             success: false,
             message: error.message || 'Unknown error occurred while unlocking device'
-        };
+        }
     }
-};
+}
 
-export default postUnlockDevice;
-
+export default postUnlockDevice

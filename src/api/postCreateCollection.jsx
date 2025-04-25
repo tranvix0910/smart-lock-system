@@ -6,30 +6,30 @@ export const postCreateCollection = async (userId, deviceId) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                Accept: 'application/json'
             },
             body: JSON.stringify({
                 userId,
                 deviceId
             })
-        });
+        })
 
-        const data = await response.json();
+        const data = await response.json()
 
         if (!response.ok && response.status !== 400) {
-            throw new Error(data.message || 'Có lỗi xảy ra khi tạo collection');
+            throw new Error(data.message || 'Có lỗi xảy ra khi tạo collection')
         }
 
         return {
             success: data.success,
             message: data.message,
             data: data.data
-        };
+        }
     } catch (error) {
-        console.error('Lỗi khi tạo collection:', error);
+        console.error('Lỗi khi tạo collection:', error)
         return {
             success: false,
             message: error.message || 'Có lỗi xảy ra khi tạo collection'
-        };
+        }
     }
-};
+}

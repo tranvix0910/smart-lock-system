@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { 
-    MdCreditCard, 
-    MdAdd, 
-    MdDelete, 
+import {
+    MdCreditCard,
+    MdAdd,
+    MdDelete,
     MdRefresh,
     MdSearch,
     MdPerson,
@@ -48,14 +48,16 @@ const RFID = () => {
         try {
             const data = await getRFIDCard(currentUserId)
             console.log('API Response:', data) // Debug log
-            
+
             if (data.success && data.rfid && Array.isArray(data.rfid)) {
-                setRfidCards(data.rfid.map(card => ({
-                    ...card,
-                    id: card._id || card.rfidId,
-                    status: 'Active', // Default status
-                    cardType: 'Standard' // Default card type
-                })))
+                setRfidCards(
+                    data.rfid.map((card) => ({
+                        ...card,
+                        id: card._id || card.rfidId,
+                        status: 'Active', // Default status
+                        cardType: 'Standard' // Default card type
+                    }))
+                )
                 console.log('Processed RFID Cards:', data.rfid)
                 if (data.rfid.length === 0) {
                     showMessage('No RFID cards found for this user', 'info')
@@ -79,7 +81,7 @@ const RFID = () => {
     const loadDummyData = () => {
         setRfidCards([
             {
-                id: 'ObjectId(\'67f5368da6f04a0939960c42\')',
+                id: "ObjectId('67f5368da6f04a0939960c42')",
                 userId: '39da459c-4001-704e-8a18-531c910c5e4b',
                 deviceId: 'SMTV-1580',
                 faceId: '0127aada-9f96-4640-a8d8-3a57d370d8e8',
@@ -94,7 +96,7 @@ const RFID = () => {
                 cardType: 'Standard'
             },
             {
-                id: 'ObjectId(\'67f5368da6f04a0939960c43\')',
+                id: "ObjectId('67f5368da6f04a0939960c43')",
                 userId: '39da459c-4001-704e-8a18-531c910c5e4b',
                 deviceId: 'SMTV-1581',
                 faceId: '0127aada-9f96-4640-a8d8-3a57d370d8e9',
@@ -109,7 +111,7 @@ const RFID = () => {
                 cardType: 'Premium'
             },
             {
-                id: 'ObjectId(\'67f5368da6f04a0939960c44\')',
+                id: "ObjectId('67f5368da6f04a0939960c44')",
                 userId: '39da459c-4001-704e-8a18-531c910c5e4b',
                 deviceId: 'SMTV-1582',
                 faceId: '0127aada-9f96-4640-a8d8-3a57d370d8e7',
@@ -139,17 +141,20 @@ const RFID = () => {
     }, [currentUserId])
 
     const handleAddCard = (newCard) => {
-        setRfidCards(prev => [...prev, {
-            ...newCard,
-            id: newCard._id || newCard.rfidId,
-            status: 'Active', // Default status
-            cardType: 'Standard' // Default card type
-        }])
+        setRfidCards((prev) => [
+            ...prev,
+            {
+                ...newCard,
+                id: newCard._id || newCard.rfidId,
+                status: 'Active', // Default status
+                cardType: 'Standard' // Default card type
+            }
+        ])
         showMessage('RFID card added successfully', 'success')
     }
 
     const handleOpenDeleteModal = (cardId) => {
-        const card = rfidCards.find(card => card.id === cardId)
+        const card = rfidCards.find((card) => card.id === cardId)
         if (card) {
             setSelectedCard(card)
             setIsDeleteModalOpen(true)
@@ -159,7 +164,7 @@ const RFID = () => {
     }
 
     const handleDeleteSuccess = (cardId) => {
-        setRfidCards(prev => prev.filter(card => card.id !== cardId))
+        setRfidCards((prev) => prev.filter((card) => card.id !== cardId))
         showMessage('RFID card deleted successfully', 'success')
     }
 
@@ -174,53 +179,59 @@ const RFID = () => {
         }
     }
 
-    const filteredCards = rfidCards.filter(card => 
-        (card.userName && card.userName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (card.rfidId && card.rfidId.toLowerCase().replace(/:/g, '').includes(searchTerm.toLowerCase().replace(/:/g, ''))) ||
-        (card.deviceId && card.deviceId.toLowerCase().includes(searchTerm.toLowerCase()))
+    const filteredCards = rfidCards.filter(
+        (card) =>
+            (card.userName && card.userName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (card.rfidId &&
+                card.rfidId.toLowerCase().replace(/:/g, '').includes(searchTerm.toLowerCase().replace(/:/g, ''))) ||
+            (card.deviceId && card.deviceId.toLowerCase().includes(searchTerm.toLowerCase()))
     )
 
     // Helper function to generate a gradient for each card
     const getCardGradient = (cardType) => {
-        switch(cardType) {
+        switch (cardType) {
             case 'Premium':
-                return 'bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-indigo-400';
+                return 'bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-indigo-400'
             case 'Standard':
             default:
-                return 'bg-gradient-to-r from-gray-50 to-blue-50 border-l-4 border-blue-400';
+                return 'bg-gradient-to-r from-gray-50 to-blue-50 border-l-4 border-blue-400'
         }
     }
 
     // Format RFID ID with colons
     const formatRfidId = (rfidId) => {
-        if (!rfidId) return 'N/A';
+        if (!rfidId) return 'N/A'
         // Return as is since it already contains colons from the database
-        return rfidId;
+        return rfidId
     }
 
     // Get status style
     const getStatusStyle = (status) => {
         return status === 'Active'
             ? 'bg-green-100 text-green-700 border border-green-200'
-            : 'bg-red-100 text-red-700 border border-red-200';
+            : 'bg-red-100 text-red-700 border border-red-200'
     }
 
     return (
         <div className="p-6">
             {/* Notification */}
             {message && (
-                <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
-                    messageType === 'error' ? 'bg-red-500 text-white' : 
-                    messageType === 'info' ? 'bg-blue-500 text-white' :
-                    'bg-green-500 text-white'
-                }`}>
+                <div
+                    className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in-down ${
+                        messageType === 'error'
+                            ? 'bg-red-500 text-white'
+                            : messageType === 'info'
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-green-500 text-white'
+                    }`}
+                >
                     {messageType === 'error' && <MdError className="mr-2 w-5 h-5" />}
                     {messageType === 'info' && <MdInfo className="mr-2 w-5 h-5" />}
                     {messageType === 'success' && <MdCheckCircle className="mr-2 w-5 h-5" />}
                     {message}
                 </div>
             )}
-            
+
             {/* Header */}
             <div className="mb-6">
                 <div className="flex items-center gap-2">
@@ -273,13 +284,15 @@ const RFID = () => {
                     <div className="flex flex-col items-center justify-center py-20 text-gray-500">
                         <MdCreditCard className="w-16 h-16 text-gray-300 mb-3" />
                         <p className="text-lg">No RFID cards found</p>
-                        <p className="text-sm text-gray-400 mt-1">Add your first RFID card by clicking the &quot;Add New&quot; button</p>
+                        <p className="text-sm text-gray-400 mt-1">
+                            Add your first RFID card by clicking the &quot;Add New&quot; button
+                        </p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                         {filteredCards.map((card) => (
-                            <div 
-                                key={card.id} 
+                            <div
+                                key={card.id}
                                 className="rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden bg-white border border-gray-100 hover:border-blue-200 flex flex-col h-full"
                             >
                                 {/* Card Header */}
@@ -292,23 +305,31 @@ const RFID = () => {
                                                 {card.cardType || 'Standard'} RFID
                                             </span>
                                         </div>
-                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusStyle(card.status)}`}>
+                                        <span
+                                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusStyle(card.status)}`}
+                                        >
                                             {card.status}
                                         </span>
                                     </div>
-                                    
+
                                     {/* RFID ID */}
                                     <div className="mb-3 sm:mb-4">
-                                        <p className="text-base sm:text-lg md:text-xl font-mono font-semibold text-gray-800 tracking-wider truncate" title={formatRfidId(card.rfidId)}>
+                                        <p
+                                            className="text-base sm:text-lg md:text-xl font-mono font-semibold text-gray-800 tracking-wider truncate"
+                                            title={formatRfidId(card.rfidId)}
+                                        >
                                             {formatRfidId(card.rfidId)}
                                         </p>
                                     </div>
-                                    
+
                                     {/* Device ID */}
                                     <div className="flex justify-between items-end">
                                         <div className="max-w-[70%]">
                                             <p className="text-xs text-gray-500 uppercase">Device ID</p>
-                                            <p className="text-xs sm:text-sm font-medium text-gray-700 truncate" title={card.deviceId}>
+                                            <p
+                                                className="text-xs sm:text-sm font-medium text-gray-700 truncate"
+                                                title={card.deviceId}
+                                            >
                                                 {card.deviceId || 'N/A'}
                                             </p>
                                         </div>
@@ -317,7 +338,7 @@ const RFID = () => {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 {/* Card Body */}
                                 <div className="p-3 sm:p-5 flex-1 flex flex-col">
                                     {/* User Info */}
@@ -326,13 +347,18 @@ const RFID = () => {
                                             <MdPerson className="w-4 h-4 sm:w-5 sm:h-5" />
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="font-medium text-gray-800 text-sm sm:text-base truncate" title={card.userName || 'Unknown User'}>
+                                            <p
+                                                className="font-medium text-gray-800 text-sm sm:text-base truncate"
+                                                title={card.userName || 'Unknown User'}
+                                            >
                                                 {card.userName || 'Unknown User'}
                                             </p>
-                                            <p className="text-xs text-gray-500 truncate">ID: {formatId(card.userId)}</p>
+                                            <p className="text-xs text-gray-500 truncate">
+                                                ID: {formatId(card.userId)}
+                                            </p>
                                         </div>
                                     </div>
-                                    
+
                                     {/* Created Date */}
                                     <div className="flex items-center gap-2 sm:gap-3 py-3 border-b border-gray-100">
                                         <div className="flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-blue-50 text-blue-600 flex-shrink-0">
@@ -340,12 +366,15 @@ const RFID = () => {
                                         </div>
                                         <div className="min-w-0">
                                             <p className="text-xs text-gray-500">Created</p>
-                                            <p className="text-xs sm:text-sm font-medium text-gray-800 truncate" title={card.createdAt ? formatDateTime(card.createdAt) : 'N/A'}>
+                                            <p
+                                                className="text-xs sm:text-sm font-medium text-gray-800 truncate"
+                                                title={card.createdAt ? formatDateTime(card.createdAt) : 'N/A'}
+                                            >
                                                 {card.createdAt ? formatDateTime(card.createdAt) : 'N/A'}
                                             </p>
                                         </div>
                                     </div>
-                                    
+
                                     {/* Face ID - Optional Display based on length */}
                                     {card.faceId && (
                                         <div className="py-3 border-b border-gray-100">
@@ -355,25 +384,30 @@ const RFID = () => {
                                                 </div>
                                                 <p className="text-xs text-gray-500">Face ID</p>
                                             </div>
-                                            <p className="ml-9 sm:ml-12 text-xs font-mono text-gray-600 truncate" title={card.faceId}>
-                                                {card.faceId.length > 20 
+                                            <p
+                                                className="ml-9 sm:ml-12 text-xs font-mono text-gray-600 truncate"
+                                                title={card.faceId}
+                                            >
+                                                {card.faceId.length > 20
                                                     ? `${card.faceId.substring(0, 15)}...${card.faceId.substring(card.faceId.length - 5)}`
-                                                    : card.faceId
-                                                }
+                                                    : card.faceId}
                                             </p>
                                         </div>
                                     )}
-                                    
+
                                     {/* Notes - Optional */}
                                     {card.notes && (
                                         <div className="pt-3 flex-grow">
                                             <p className="text-xs text-gray-500 mb-1">Notes:</p>
-                                            <p className="text-xs sm:text-sm text-gray-700 italic line-clamp-2" title={card.notes}>
+                                            <p
+                                                className="text-xs sm:text-sm text-gray-700 italic line-clamp-2"
+                                                title={card.notes}
+                                            >
                                                 {card.notes}
                                             </p>
                                         </div>
                                     )}
-                                    
+
                                     {/* Card Actions */}
                                     <div className="flex justify-end mt-auto pt-3">
                                         <button
@@ -398,7 +432,7 @@ const RFID = () => {
                 onSubmit={handleAddCard}
                 userId={currentUserId}
             />
-            <DeleteRFIDCardModal 
+            <DeleteRFIDCardModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 card={selectedCard}

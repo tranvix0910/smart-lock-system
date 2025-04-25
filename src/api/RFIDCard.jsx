@@ -7,7 +7,7 @@ export const postRequestAddRFIDCard = async (userId, deviceId, faceId) => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({          
+            body: JSON.stringify({
                 faceId: faceId
             })
         })
@@ -32,14 +32,12 @@ export const postRequestAddRFIDCard = async (userId, deviceId, faceId) => {
 
 export const getRFIDCard = async (userId) => {
     try {
-        const response = await fetch(`${API_URL}/rfid/get-rfid/${userId}`,
-            {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+        const response = await fetch(`${API_URL}/rfid/get-rfid/${userId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
             }
-        )
+        })
         if (!response.ok) {
             throw new Error('Network response was not ok')
         }
@@ -80,13 +78,13 @@ export const postRequestDeleteRFIDCard = async (userId, deviceId, rfidId, faceId
 
 export const getUsernameByRFIDCard = async (rfidId) => {
     if (!rfidId) {
-        console.error("getUsernameByRFIDCard called with no rfidId");
-        return { success: false, error: "No RFID ID provided" };
+        console.error('getUsernameByRFIDCard called with no rfidId')
+        return { success: false, error: 'No RFID ID provided' }
     }
-    
+
     try {
-        console.log("Sending request to get username for RFID:", rfidId);
-        
+        console.log('Sending request to get username for RFID:', rfidId)
+
         const response = await fetch(`${API_URL}/rfid/get-username-by-rfid`, {
             method: 'POST',
             headers: {
@@ -94,14 +92,14 @@ export const getUsernameByRFIDCard = async (rfidId) => {
             },
             body: JSON.stringify({ rfidId })
         })
-        
+
         if (!response.ok) {
-            console.error(`API response not OK: ${response.status} ${response.statusText}`);
+            console.error(`API response not OK: ${response.status} ${response.statusText}`)
             throw new Error('Network response was not ok')
         }
-        
+
         const data = await response.json()
-        console.log("API response data:", data)
+        console.log('API response data:', data)
         return data
     } catch (error) {
         console.error('Error getting username by RFID card:', error)

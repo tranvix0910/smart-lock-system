@@ -12,7 +12,7 @@ const linkClass =
 
 function Sidebar({ isOpen, toggleSidebar }) {
     return (
-        <div 
+        <div
             className={classNames(
                 'sidebar-container bg-[#24303f] w-[280px] p-4 flex flex-col z-40',
                 'fixed top-0 left-0 h-full lg:static transition-transform duration-300 ease-in-out',
@@ -27,10 +27,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
                 </div>
                 <span className="text-neutral-200 text-xl">Smart Lock System</span>
                 {/* Close button for mobile */}
-                <button 
-                    className="ml-auto lg:hidden text-white" 
-                    onClick={toggleSidebar}
-                >
+                <button className="ml-auto lg:hidden text-white" onClick={toggleSidebar}>
                     <MdClose fontSize={24} />
                 </button>
             </div>
@@ -45,8 +42,11 @@ function Sidebar({ isOpen, toggleSidebar }) {
                 ))}
                 <Authenticator>
                     {({ signOut }) => (
-                        <div 
-                            className={classNames(linkClass, 'cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10')} 
+                        <div
+                            className={classNames(
+                                linkClass,
+                                'cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10'
+                            )}
                             onClick={signOut}
                         >
                             <span className="text-xl">
@@ -69,12 +69,11 @@ Sidebar.propTypes = {
 function SidebarLink({ link }) {
     const { pathname } = useLocation()
     const [isSubmenuOpen, setIsSubmenuOpen] = useState(false)
-    const isActive = pathname === link.path || 
-                    (link.submenu?.some(sublink => pathname === sublink.path))
+    const isActive = pathname === link.path || link.submenu?.some((sublink) => pathname === sublink.path)
 
     // Automatically open submenu if current path is in submenu
     useEffect(() => {
-        if (link.submenu?.some(sublink => pathname === sublink.path)) {
+        if (link.submenu?.some((sublink) => pathname === sublink.path)) {
             setIsSubmenuOpen(true)
         }
     }, [pathname, link.submenu])
@@ -84,25 +83,24 @@ function SidebarLink({ link }) {
             <div>
                 <div
                     className={classNames(
-                        isActive 
-                            ? 'bg-[#ebf45d] text-[#24303f] shadow-lg' 
-                            : 'text-neutral-400 hover:text-white',
+                        isActive ? 'bg-[#ebf45d] text-[#24303f] shadow-lg' : 'text-neutral-400 hover:text-white',
                         linkClass,
                         'cursor-pointer'
                     )}
                     onClick={() => setIsSubmenuOpen(!isSubmenuOpen)}
                 >
-                    <span className={classNames(
-                        "text-xl transition-colors duration-200",
-                        isActive ? "text-[#24303f]" : "text-neutral-400"
-                    )}>
+                    <span
+                        className={classNames(
+                            'text-xl transition-colors duration-200',
+                            isActive ? 'text-[#24303f]' : 'text-neutral-400'
+                        )}
+                    >
                         {link.icon}
                     </span>
                     <span className="flex-1">{link.label}</span>
-                    <span className={classNames(
-                        "transition-transform duration-200",
-                        isSubmenuOpen ? "rotate-180" : ""
-                    )}>
+                    <span
+                        className={classNames('transition-transform duration-200', isSubmenuOpen ? 'rotate-180' : '')}
+                    >
                         {link.submenuIcon}
                     </span>
                 </div>
@@ -119,10 +117,12 @@ function SidebarLink({ link }) {
                                     'flex items-center gap-3 font-medium px-4 py-2 hover:bg-[#2a3b4f] hover:no-underline rounded-lg text-sm transition-all duration-200 ease-in-out'
                                 )}
                             >
-                                <span className={classNames(
-                                    "text-lg transition-colors duration-200",
-                                    pathname === sublink.path ? "text-[#24303f]" : "text-neutral-400"
-                                )}>
+                                <span
+                                    className={classNames(
+                                        'text-lg transition-colors duration-200',
+                                        pathname === sublink.path ? 'text-[#24303f]' : 'text-neutral-400'
+                                    )}
+                                >
                                     {sublink.icon}
                                 </span>
                                 {sublink.label}
@@ -138,16 +138,16 @@ function SidebarLink({ link }) {
         <Link
             to={link.path}
             className={classNames(
-                isActive 
-                    ? 'bg-[#ebf45d] text-[#24303f] shadow-lg' 
-                    : 'text-neutral-400 hover:text-white', 
+                isActive ? 'bg-[#ebf45d] text-[#24303f] shadow-lg' : 'text-neutral-400 hover:text-white',
                 linkClass
             )}
         >
-            <span className={classNames(
-                "text-xl transition-colors duration-200",
-                isActive ? "text-[#24303f]" : "text-neutral-400"
-            )}>
+            <span
+                className={classNames(
+                    'text-xl transition-colors duration-200',
+                    isActive ? 'text-[#24303f]' : 'text-neutral-400'
+                )}
+            >
                 {link.icon}
             </span>
             {link.label}
@@ -173,4 +173,4 @@ SidebarLink.propTypes = {
     }).isRequired
 }
 
-export default Sidebar;
+export default Sidebar

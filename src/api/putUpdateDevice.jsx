@@ -3,8 +3,8 @@ const API_URL = 'http://localhost:4000/api'
 export const putUpdateDevice = async (userId, deviceId, updatedDevice) => {
     try {
         const response = await fetch(`${API_URL}/devices/${userId}/${deviceId}/update`, {
-                method: 'PUT',
-                headers: {
+            method: 'PUT',
+            headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(updatedDevice)
@@ -15,7 +15,7 @@ export const putUpdateDevice = async (userId, deviceId, updatedDevice) => {
         }
 
         const responseData = await response.json()
-        
+
         if (!responseData.success) {
             throw new Error(responseData.message || 'Failed to update device')
         }
@@ -25,5 +25,4 @@ export const putUpdateDevice = async (userId, deviceId, updatedDevice) => {
         console.error('Error updating device:', error)
         throw error
     }
-}   
-
+}

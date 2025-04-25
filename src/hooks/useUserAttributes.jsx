@@ -24,4 +24,3 @@ const useUserAttributes = () => {
     return userAttributes
 }
 export default useUserAttributes
-

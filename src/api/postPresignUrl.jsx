@@ -11,7 +11,7 @@ export const getPresignUrl = async (key) => {
             body: JSON.stringify({ key })
         })
 
-        console.log('Presign URL request:', { 
+        console.log('Presign URL request:', {
             url: `${API_URL}/s3/get-presigned-url`,
             key,
             status: response.status

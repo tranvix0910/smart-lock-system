@@ -14,7 +14,7 @@ export const postIndexFace = async (userId, deviceId, userName, imageFile) => {
                 type: imageFile.type,
                 size: imageFile.size
             }
-        });
+        })
 
         const response = await fetch(`${API_URL}/rekognition/index-face/${userId}/${deviceId}`, {
             method: 'POST',
