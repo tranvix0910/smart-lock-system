@@ -14,9 +14,20 @@ const socketOptions = {
 }
 
 // Socket mặc định
-const socket = io(import.meta.env.VITE_BACKEND_URL, socketOptions);
+const socket = io(import.meta.env.VITE_BACKEND_URL, {
+    ...socketOptions,
+    forceNew: true
+});
 
-const adminSocket = io(`${import.meta.env.VITE_BACKEND_URL}/admin`, socketOptions);
+// Socket cho namespace admin
+const adminSocket = io(import.meta.env.VITE_BACKEND_URL + '/admin', {
+    ...socketOptions,
+    forceNew: true,
+    auth: {
+        username: 'admin',
+        password: 'admin'
+    }
+});
 
 // Event handlers cho socket mặc định
 socket.on('connect', () => {
@@ -25,6 +36,12 @@ socket.on('connect', () => {
 
 socket.on('disconnect', (reason) => {
     console.log('WebSocket disconnected:', reason)
+    // Thử kết nối lại sau 5 giây
+    setTimeout(() => {
+        if (!socket.connected) {
+            socket.connect();
+        }
+    }, 5000);
 })
 
 socket.on('connect_error', (error) => {
@@ -56,10 +73,20 @@ adminSocket.on('connect', () => {
 
 adminSocket.on('connect_error', (error) => {
     console.error('Admin WebSocket connection error:', error)
+    // Kiểm tra xem lỗi có phải do xác thực không
+    if (error.message === 'Authentication failed') {
+        console.log('Admin authentication failed - check credentials')
+    }
 })
 
 adminSocket.on('disconnect', (reason) => {
     console.log('Admin WebSocket disconnected:', reason)
+    // Thử kết nối lại sau 5 giây
+    setTimeout(() => {
+        if (!adminSocket.connected) {
+            adminSocket.connect();
+        }
+    }, 5000);
 })
 
 // Utility functions
