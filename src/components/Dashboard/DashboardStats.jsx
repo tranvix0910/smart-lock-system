@@ -83,11 +83,11 @@ export default function DashboardStatsGrid() {
             )}
 
             <div className="mb-4 flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-[#24303f]">Dashboard Statistics</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-[#24303f] truncate">Dashboard Stats</h2>
                 <button
                     onClick={refreshStats}
                     disabled={isLoading}
-                    className="p-2 text-[#24303f] border border-gray-200 rounded-lg hover:border-[#ebf45d] transition-colors duration-150"
+                    className="p-2 text-[#24303f] border border-gray-200 rounded-lg hover:border-[#ebf45d] transition-colors duration-150 flex-shrink-0"
                 >
                     <MdRefresh className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
                 </button>

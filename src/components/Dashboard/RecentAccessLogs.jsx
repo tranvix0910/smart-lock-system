@@ -12,7 +12,8 @@ import {
     MdOutlineWarning,
     MdCheckCircle,
     MdInfo,
-    MdError
+    MdError,
+    MdMoreVert
 } from 'react-icons/md'
 import { useState, useEffect } from 'react'
 import { getRecentAccessLogs } from '../../api/getRecentAccessLogs'
@@ -35,6 +36,13 @@ const animationStyles = `
 .animate-fade-in-down {
     animation: fadeInDown 0.3s ease-out;
 }
+
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
 `
 
 export default function RecentAccess() {
@@ -47,6 +55,7 @@ export default function RecentAccess() {
     const [selectedAccess, setSelectedAccess] = useState(null)
     const [message, setMessage] = useState('')
     const [messageType, setMessageType] = useState('')
+    const [expandedRow, setExpandedRow] = useState(null)
 
     const formatId = (id) => {
         if (!id) return 'N/A'
@@ -201,9 +210,17 @@ export default function RecentAccess() {
         }
     }
 
+    const toggleRowExpanded = (id) => {
+        if (expandedRow === id) {
+            setExpandedRow(null)
+        } else {
+            setExpandedRow(id)
+        }
+    }
+
     if (loading) {
         return (
-            <div className="bg-white px-6 pt-4 pb-6 rounded-lg border border-gray-200 flex-1 shadow-sm">
+            <div className="bg-white px-4 sm:px-6 pt-4 pb-6 rounded-lg border border-gray-200 flex-1 shadow-sm">
                 <div className="flex justify-between items-center mb-6 mt-2">
                     <div className="flex items-center gap-2">
                         <MdAccessTime className="w-6 h-6 text-[#24303f]" />
@@ -219,7 +236,7 @@ export default function RecentAccess() {
 
     if (error) {
         return (
-            <div className="bg-white px-6 pt-4 pb-6 rounded-lg border border-gray-200 flex-1 shadow-sm">
+            <div className="bg-white px-4 sm:px-6 pt-4 pb-6 rounded-lg border border-gray-200 flex-1 shadow-sm">
                 <div className="flex justify-between items-center mb-6 mt-2">
                     <div className="flex items-center gap-2">
                         <MdAccessTime className="w-6 h-6 text-[#24303f]" />
@@ -242,7 +259,7 @@ export default function RecentAccess() {
     }
 
     return (
-        <div className="bg-white px-6 pt-4 pb-6 rounded-lg border border-gray-200 flex-1 shadow-sm">
+        <div className="bg-white px-4 sm:px-6 pt-4 pb-6 rounded-lg border border-gray-200 flex-1 shadow-sm w-full">
             <style>{animationStyles}</style>
 
             {message && (
@@ -277,7 +294,7 @@ export default function RecentAccess() {
             <div className="flex justify-between items-center mb-6 mt-2">
                 <div className="flex items-center gap-2">
                     <MdAccessTime className="w-6 h-6 text-[#24303f]" />
-                    <strong className="text-gray-800 font-semibold text-lg">Recent Access Logs</strong>
+                    <strong className="text-gray-800 font-semibold text-lg truncate">Recent Logs</strong>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
@@ -290,132 +307,233 @@ export default function RecentAccess() {
                     </button>
                     <button
                         onClick={() => navigate('/dashboard/recent-access-logs')}
-                        className="flex items-center gap-2 px-4 py-2 text-[#24303f] bg-transparent border border-transparent hover:border-[#ebf45d] rounded-lg transition-colors duration-150"
+                        className="flex items-center justify-center w-8 h-8 text-[#24303f] bg-[#ebf45d] rounded-full sm:rounded-lg sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-[#d9e154] transition-colors duration-150"
                     >
-                        <span className="font-medium">View All</span>
+                        <span className="hidden sm:inline text-sm font-medium mr-1">View All</span>
                         <MdChevronRight className="w-5 h-5" />
                     </button>
                 </div>
             </div>
 
             {accessLogs.length > 0 ? (
-                <div className="rounded-lg mt-3 overflow-hidden border border-gray-100">
-                    <table className="w-full border-collapse">
-                        <thead className="rounded-t-lg bg-gray-50 text-gray-600">
-                            <tr className="text-xs font-medium uppercase tracking-wider">
-                                <th className="px-4 py-3 text-left">Time</th>
-                                <th className="px-4 py-3 text-left">Device</th>
-                                <th className="px-4 py-3 text-left">User</th>
-                                <th className="px-4 py-3 text-left">Method</th>
-                                <th className="px-4 py-3 text-left">Status</th>
-                                <th className="px-4 py-3 text-left">Notes</th>
-                                <th className="px-4 py-3 text-left">Image</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-gray-600 divide-y divide-gray-100">
-                            {accessLogs.map((access) => (
-                                <tr key={access._id} className="hover:bg-gray-50 transition-colors duration-150">
-                                    <td className="px-4 py-3 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <MdAccessTime className="w-5 h-5 mr-2 text-gray-400" />
-                                            <span className="text-sm text-gray-900">
-                                                {formatDateTime(access.createdAt)}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <MdDevices className="w-5 h-5 mr-2 text-gray-400" />
+                <>
+                    {/* Desktop View - Table */}
+                    <div className="hidden md:block rounded-lg mt-3 overflow-hidden border border-gray-100">
+                        <div className="table-container">
+                            <table className="w-full border-collapse">
+                                <thead className="rounded-t-lg bg-gray-50 text-gray-600">
+                                    <tr className="text-xs font-medium uppercase tracking-wider">
+                                        <th className="px-4 py-3 text-left">Time</th>
+                                        <th className="px-4 py-3 text-left">Device</th>
+                                        <th className="px-4 py-3 text-left">User</th>
+                                        <th className="px-4 py-3 text-left">Method</th>
+                                        <th className="px-4 py-3 text-left">Status</th>
+                                        <th className="px-4 py-3 text-left">Notes</th>
+                                        <th className="px-4 py-3 text-left">Image</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="text-gray-600 divide-y divide-gray-100">
+                                    {accessLogs.map((access) => (
+                                        <tr key={access._id} className="hover:bg-gray-50 transition-colors duration-150">
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    <MdAccessTime className="w-5 h-5 mr-2 text-gray-400" />
+                                                    <span className="text-sm text-gray-900">
+                                                        {formatDateTime(access.createdAt)}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    <MdDevices className="w-5 h-5 mr-2 text-gray-400" />
+                                                    <div>
+                                                        <div className="font-medium text-gray-900">
+                                                            {access.deviceName || access.deviceId}
+                                                        </div>
+                                                        {access.deviceName && (
+                                                            <div className="text-xs text-gray-500">
+                                                                {formatId(access.deviceId)}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    {access.accessType === 'FINGERPRINT' ? (
+                                                        <>
+                                                            <MdFingerprint className="w-5 h-5 mr-2 text-gray-400" />
+                                                            <div>
+                                                                <div className="font-medium text-gray-900">
+                                                                    {access.userName}
+                                                                </div>
+                                                                <div className="text-xs text-gray-500">Fingerprint ID</div>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <MdPerson className="w-5 h-5 mr-2 text-gray-400" />
+                                                            <div>
+                                                                <div className="font-medium text-gray-900">
+                                                                    {access.userName}
+                                                                </div>
+                                                                <div
+                                                                    className="text-xs text-gray-500 cursor-help"
+                                                                    title={access.userId}
+                                                                >
+                                                                    {formatId(access.userId)}
+                                                                </div>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    {getMethodIcon(access.accessType)}
+                                                    <span className="text-sm text-gray-900">
+                                                        {access.accessType ? access.accessType.replace('_', ' ') : 'Unknown'}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <span className={getStatusBadge(access.status)}>{access.status}</span>
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap max-w-[150px] truncate">
+                                                <span className="text-xs text-gray-600" title={access.notes || 'No notes'}>
+                                                    {access.notes || '—'}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                {access.accessType === 'FACE_ID' || access.accessType === 'FACE ID' ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            handleImageClick(access)
+                                                        }}
+                                                        className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors duration-150"
+                                                        title="View face image"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            className="w-5 h-5 text-gray-600"
+                                                            viewBox="0 0 24 24"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                                                        </svg>
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-xs text-gray-400">—</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Mobile View - Card Layout */}
+                    <div className="md:hidden mt-3 space-y-3 w-full">
+                        {accessLogs.map((access) => (
+                            <div key={access._id} className="border border-gray-100 rounded-lg overflow-hidden bg-white shadow-sm">
+                                <div className="px-4 py-3 bg-gray-50 flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <MdAccessTime className="w-5 h-5 text-gray-500" />
+                                        <span className="text-sm font-medium">{formatDateTime(access.createdAt)}</span>
+                                    </div>
+                                    <div>
+                                        <span className={getStatusBadge(access.status)}>{access.status}</span>
+                                    </div>
+                                </div>
+                                
+                                <div className="p-4 space-y-3">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-start gap-3">
+                                            <div className="bg-gray-100 p-2 rounded-full">
+                                                <MdDevices className="w-5 h-5 text-gray-600" />
+                                            </div>
                                             <div>
-                                                <div className="font-medium text-gray-900">
+                                                <div className="text-sm text-gray-500">Device</div>
+                                                <div className="font-medium">
                                                     {access.deviceName || access.deviceId}
                                                 </div>
                                                 {access.deviceName && (
-                                                    <div className="text-xs text-gray-500">
-                                                        {formatId(access.deviceId)}
-                                                    </div>
+                                                    <div className="text-xs text-gray-500">{formatId(access.deviceId)}</div>
                                                 )}
                                             </div>
                                         </div>
-                                    </td>
-                                    <td className="px-4 py-3 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            {access.accessType === 'FINGERPRINT' ? (
-                                                <>
-                                                    <MdFingerprint className="w-5 h-5 mr-2 text-gray-400" />
-                                                    <div>
-                                                        <div className="font-medium text-gray-900">
-                                                            {access.userName}
-                                                        </div>
-                                                        <div className="text-xs text-gray-500">Fingerprint ID</div>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <MdPerson className="w-5 h-5 mr-2 text-gray-400" />
-                                                    <div>
-                                                        <div className="font-medium text-gray-900">
-                                                            {access.userName}
-                                                        </div>
-                                                        <div
-                                                            className="text-xs text-gray-500 cursor-help"
-                                                            title={access.userId}
-                                                        >
-                                                            {formatId(access.userId)}
-                                                        </div>
-                                                    </div>
-                                                </>
-                                            )}
+                                        
+                                        <button 
+                                            className="p-2"
+                                            onClick={() => toggleRowExpanded(access._id)}
+                                        >
+                                            <MdMoreVert className="w-5 h-5 text-gray-500" />
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="flex items-start gap-3">
+                                        <div className="bg-gray-100 p-2 rounded-full">
+                                            <MdPerson className="w-5 h-5 text-gray-600" />
                                         </div>
-                                    </td>
-                                    <td className="px-4 py-3 whitespace-nowrap">
-                                        <div className="flex items-center">
+                                        <div>
+                                            <div className="text-sm text-gray-500">User</div>
+                                            <div className="font-medium">{access.userName}</div>
+                                            <div className="text-xs text-gray-500">{formatId(access.userId)}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-start gap-3">
+                                        <div className="bg-gray-100 p-2 rounded-full">
                                             {getMethodIcon(access.accessType)}
-                                            <span className="text-sm text-gray-900">
-                                                {access.accessType ? access.accessType.replace('_', ' ') : 'Unknown'}
-                                            </span>
                                         </div>
-                                    </td>
-                                    <td className="px-4 py-3 whitespace-nowrap">
-                                        <span className={getStatusBadge(access.status)}>{access.status}</span>
-                                    </td>
-                                    <td className="px-4 py-3 whitespace-nowrap max-w-[150px] truncate">
-                                        <span className="text-xs text-gray-600" title={access.notes || 'No notes'}>
-                                            {access.notes || '—'}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3 whitespace-nowrap">
-                                        {access.accessType === 'FACE_ID' || access.accessType === 'FACE ID' ? (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    console.log('Image button clicked for access:', access)
-                                                    handleImageClick(access)
-                                                }}
-                                                className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors duration-150"
-                                                title="View face image"
+                                        <div>
+                                            <div className="text-sm text-gray-500">Access Method</div>
+                                            <div className="font-medium">
+                                                {access.accessType ? access.accessType.replace('_', ' ') : 'Unknown'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {expandedRow === access._id && (
+                                        <>
+                                            {access.notes && (
+                                                <div className="pt-2 border-t border-gray-100">
+                                                    <div className="text-sm text-gray-500">Notes</div>
+                                                    <div className="text-sm">{access.notes}</div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                                
+                                {(access.accessType === 'FACE_ID' || access.accessType === 'FACE ID') && (
+                                    <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
+                                        <button
+                                            onClick={() => handleImageClick(access)}
+                                            className="w-full flex items-center justify-center gap-2 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors duration-150"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="w-5 h-5 text-gray-600"
+                                                viewBox="0 0 24 24"
+                                                fill="currentColor"
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="w-5 h-5 text-gray-600"
-                                                    viewBox="0 0 24 24"
-                                                    fill="currentColor"
-                                                >
-                                                    <path d="M0 0h24v24H0z" fill="none" />
-                                                    <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-                                                </svg>
-                                            </button>
-                                        ) : (
-                                            <span className="text-xs text-gray-400">—</span>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                                <path d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                                            </svg>
+                                            <span className="text-sm font-medium">View Face Image</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </>
             ) : (
-                <div className="py-10 px-6 flex flex-col items-center justify-center text-center border border-gray-100 rounded-lg bg-gray-50">
+                <div className="py-10 px-4 sm:px-6 flex flex-col items-center justify-center text-center border border-gray-100 rounded-lg bg-gray-50 w-full">
                     <div className="bg-gray-100 rounded-full p-3 mb-3">
                         <MdAccessTime className="w-8 h-8 text-gray-400" />
                     </div>

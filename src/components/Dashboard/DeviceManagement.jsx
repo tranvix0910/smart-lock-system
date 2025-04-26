@@ -357,20 +357,20 @@ const DeviceManagement = () => {
             />
 
             <div className="flex justify-between items-center mb-6 mt-2">
-                <strong className="text-gray-800 font-semibold text-lg">Device Management</strong>
+                <strong className="text-gray-800 font-semibold text-lg truncate">Device Management</strong>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={handleReload}
                         disabled={isReloading}
-                        className={`flex items-center justify-center w-10 h-10 rounded-lg text-[#24303f] bg-transparent border border-transparent hover:border-[#ebf45d] transition-colors duration-150 ${isReloading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`flex items-center justify-center w-10 h-10 rounded-lg text-[#24303f] bg-transparent border border-transparent hover:border-[#ebf45d] transition-colors duration-150 flex-shrink-0 ${isReloading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         <MdRefresh className={`w-5 h-5 ${isReloading ? 'animate-spin' : ''}`} />
                     </button>
                     <button
                         onClick={() => navigate('/dashboard/devices-management')}
-                        className="flex items-center gap-2 px-4 py-2 text-[#24303f] bg-transparent border border-transparent hover:border-[#ebf45d] rounded-lg transition-colors duration-150"
+                        className="flex items-center justify-center w-10 h-10 rounded-lg sm:w-auto sm:h-auto sm:px-4 sm:py-2 text-[#24303f] bg-transparent border border-transparent hover:border-[#ebf45d] transition-colors duration-150 flex-shrink-0"
                     >
-                        <span className="font-medium">More Devices</span>
+                        <span className="hidden sm:inline font-medium">More Devices</span>
                         <MdChevronRight className="w-5 h-5" />
                     </button>
                 </div>
