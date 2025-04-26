@@ -1,6 +1,7 @@
 import { io } from 'socket.io-client'
 
-const socket = io(import.meta.env.VITE_BACKEND_URL, {
+// Cấu hình chung cho socket
+const socketOptions = {
     autoConnect: true,
     reconnection: true,
     reconnectionAttempts: 5,
@@ -9,11 +10,15 @@ const socket = io(import.meta.env.VITE_BACKEND_URL, {
     timeout: 20000,
     transports: ['polling', 'websocket'],
     withCredentials: true,
-    extraHeaders: {
-        'Access-Control-Allow-Origin': '*'
-    }
-})
+    path: '/socket.io'
+}
 
+// Socket mặc định
+const socket = io(import.meta.env.VITE_BACKEND_URL, socketOptions);
+
+const adminSocket = io(`${import.meta.env.VITE_BACKEND_URL}/admin`, socketOptions);
+
+// Event handlers cho socket mặc định
 socket.on('connect', () => {
     console.log('WebSocket connected successfully')
 })
@@ -24,6 +29,7 @@ socket.on('disconnect', (reason) => {
 
 socket.on('connect_error', (error) => {
     console.error('WebSocket connection error:', error)
+    // Thử lại với polling nếu websocket thất bại
     if (socket.io.opts.transports.includes('websocket')) {
         console.log('Falling back to polling transport')
         socket.io.opts.transports = ['polling']
@@ -43,13 +49,33 @@ socket.on('reconnect_failed', () => {
     console.error('WebSocket reconnection failed')
 })
 
+// Event handlers cho admin socket
+adminSocket.on('connect', () => {
+    console.log('Admin WebSocket connected successfully')
+})
+
+adminSocket.on('connect_error', (error) => {
+    console.error('Admin WebSocket connection error:', error)
+})
+
+adminSocket.on('disconnect', (reason) => {
+    console.log('Admin WebSocket disconnected:', reason)
+})
+
+// Utility functions
 export const checkConnection = () => {
-    return socket.connected
+    return {
+        default: socket.connected,
+        admin: adminSocket.connected
+    }
 }
 
 export const connect = () => {
     if (!socket.connected) {
         socket.connect()
+    }
+    if (!adminSocket.connected) {
+        adminSocket.connect()
     }
 }
 
@@ -57,6 +83,9 @@ export const disconnect = () => {
     if (socket.connected) {
         socket.disconnect()
     }
+    if (adminSocket.connected) {
+        adminSocket.disconnect()
+    }
 }
 
-export default socket
+export { socket as default, adminSocket }
