@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:4000/api/devices'
+const API_URL = import.meta.env.VITE_BACKEND_URL
 
 export const postCreateDevice = async (deviceData) => {
     const response = await fetch(`${API_URL}/create-device`, {

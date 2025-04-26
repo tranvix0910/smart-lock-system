@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:4000/api/rekognition'
+const API_URL = import.meta.env.VITE_BACKEND_URL
 
 export const postCreateCollection = async (userId, deviceId) => {
     try {
