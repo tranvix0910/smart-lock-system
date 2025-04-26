@@ -1,7 +1,7 @@
 import './App.css'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
-import Layout from './components/Shared/Layout'
+import Layout from './components/shared/Layout'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import DevicesManagement from './pages/DevicesManagement'
