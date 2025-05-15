@@ -124,6 +124,12 @@ const Home = () => {
                                     Designed by Tran Dai Vi - N22DCCI044
                                     <br />
                                     Posts and Telecommunications Institute of Technology (PTIT)
+                                    <br />
+                                    Email and Password for Test User
+                                    <br />
+                                    Email: test@gmail.com
+                                    <br />
+                                    Password: Test123456@
                                 </p>
                             </div>
 
